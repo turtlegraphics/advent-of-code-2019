@@ -10,7 +10,9 @@ def value(mem,noun,verb):
     mem[1] = noun
     mem[2] = verb
     ip = 0
-    while mem[ip] != 99:
+    while True:
+        if mem[ip] == 99:
+            break
         if mem[ip] == 1:
             mem[mem[ip+3]] = mem[mem[ip+1]] + mem[mem[ip+2]]
         elif mem[ip] == 2:
