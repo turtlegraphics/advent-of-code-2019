@@ -38,38 +38,30 @@ if __name__ == "__main__":
 
     grid = {}
     x,y = 0,0
-    steps = 0
+
     for inst in data[0].strip().split(','):
         dir = inst[0]
         val = int(inst[1:])
         if dir == 'R':
             while val > 0:
-                if (x,y) not in grid:
-                    grid[(x,y)] = steps
+                grid[(x,y)] = True
                 x += 1
                 val -= 1
-                steps += 1
         elif dir == 'L':
             while val > 0:
-                if (x,y) not in grid:
-                    grid[(x,y)] = steps
+                grid[(x,y)] = True
                 x -= 1
                 val -= 1
-                steps += 1
         elif dir == 'U':
             while val > 0:
-                if (x,y) not in grid:
-                    grid[(x,y)] = steps
+                grid[(x,y)] = True
                 y += 1
                 val -= 1
-                steps += 1
         elif dir == 'D':
             while val > 0:
-                if (x,y) not in grid:
-                    grid[(x,y)] = steps
+                grid[(x,y)] = True
                 y -= 1
                 val -= 1
-                steps += 1
         else:
             print 'Bad direction'
             break
@@ -78,43 +70,41 @@ if __name__ == "__main__":
 
     (x,y) = (0,0)
     collisions = []
-    steps = 0
     for inst in data[1].strip().split(','):
         dir = inst[0]
         val = int(inst[1:])
         if dir == 'R':
             while val > 0:
                 if (x,y) in grid:
-                    collisions.append(grid[(x,y)]+steps)
+                    collisions.append((x,y))
                 x += 1
                 val -= 1
-                steps += 1
         elif dir == 'L':
             while val > 0:
                 if (x,y) in grid:
-                    collisions.append(grid[(x,y)]+steps)
+                    collisions.append((x,y))
                 x -= 1
                 val -= 1
-                steps += 1
         elif dir == 'U':
             while val > 0:
                 if (x,y) in grid:
-                    collisions.append(grid[(x,y)]+steps)
+                    collisions.append((x,y))
                 y += 1
                 val -= 1
-                steps += 1
         elif dir == 'D':
             while val > 0:
                 if (x,y) in grid:
-                    collisions.append(grid[(x,y)]+steps)
+                    collisions.append((x,y))
                 y -= 1
-                steps += 1
                 val -= 1
         else:
             print 'Bad direction'
             break
 
     print 'wire 2 done'
-    assert(collisions[0] == 0)
-    print min(collisions[1:])
+    assert(collisions[0] == (0,0))
+    print min([abs(x)+abs(y) for (x,y) in collisions[1:]])
+
+
+
     
