@@ -29,11 +29,11 @@ _instruction_set = {
 class Intcode:
     def __init__(self,mem,ip=0,debug=False):
         """
-        mem : an array of intcode integers.
+        mem : an array of intcode integers, will be copied locally
         ip  : initial instruction pointer.
         debug : when true, all instructions print output.
         """
-        self.mem = mem
+        self.mem = list(mem)
         self.ip = ip
         self.debug = debug
 
