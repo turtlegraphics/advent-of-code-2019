@@ -2,21 +2,25 @@
 # intcode machine
 #
 
-def _addi(ip,mem):
+def _addi(machine):
     """addi (%d)+(%d)->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
     mem[mem[ip+3]] = mem[mem[ip+1]] + mem[mem[ip+2]]
-    return ip + 4 
+    machine.ip += 4 
 
-def _muli(ip,mem):
+def _muli(machine):
     """muli (%d)*(%d)->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
     mem[mem[ip+3]] = mem[mem[ip+1]] * mem[mem[ip+2]]
-    return ip + 4 
+    machine.ip += 4
 
 class MachineQuit(Exception):
     """Intcode machine terminated."""
     pass
 
-def _mquit(ip,mem):
+def _mquit(machine):
     """quit"""
     raise MachineQuit
 
@@ -52,7 +56,7 @@ class Machine:
         if self.debug:
             self.disassemble(self.ip)
         op = _instruction_set[self.mem[self.ip]]
-        self.ip = op(self.ip,self.mem)
+        op(self)
 
     def disassemble(self, loc, numinst = 1):
         """Disassemble numinst instructions of code starting at loc.
