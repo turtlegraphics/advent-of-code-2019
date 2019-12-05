@@ -2,19 +2,245 @@
 # intcode machine
 #
 
-def _addi(machine):
-    """addi (%d)+(%d)->(%d)"""
+_instruction_set = {}
+
+def _addppp(machine):
+    """addppp (%d)+(%d)->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = mem[mem[ip+1]] + mem[mem[ip+2]]
     machine.ip += 4 
+_instruction_set[1] = _addppp
 
-def _muli(machine):
-    """muli (%d)*(%d)->(%d)"""
+def _addipp(machine):
+    """addipp #%d+(%d)->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = mem[ip+1] + mem[mem[ip+2]]
+    machine.ip += 4 
+_instruction_set[101] = _addipp
+
+def _addpip(machine):
+    """addpip (%d)+#%d->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = mem[mem[ip+1]] + mem[ip+2]
+    machine.ip += 4 
+_instruction_set[1001] = _addpip
+
+def _addiip(machine):
+    """addiip #%d+#%d->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = mem[ip+1] + mem[ip+2]
+    machine.ip += 4 
+_instruction_set[1101] = _addiip
+
+def _mulppp(machine):
+    """mulppp (%d)+(%d)->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = mem[mem[ip+1]] * mem[mem[ip+2]]
-    machine.ip += 4
+    machine.ip += 4 
+_instruction_set[2] = _mulppp
+
+def _mulipp(machine):
+    """mulipp #%d+(%d)->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = mem[ip+1] * mem[mem[ip+2]]
+    machine.ip += 4 
+_instruction_set[102] = _mulipp
+
+def _mulpip(machine):
+    """mulpip (%d)+#%d->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = mem[mem[ip+1]] * mem[ip+2]
+    machine.ip += 4 
+_instruction_set[1002] = _mulpip
+
+def _muliip(machine):
+    """muliip #%d+#%d->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = mem[ip+1] * mem[ip+2]
+    machine.ip += 4 
+_instruction_set[1102] = _muliip
+
+def _lthppp(machine):
+    """lthppp (%d)+(%d)->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = 1 if mem[mem[ip+1]] < mem[mem[ip+2]] else 0
+    machine.ip += 4 
+_instruction_set[7] = _lthppp
+
+def _lthipp(machine):
+    """lthipp #%d+(%d)->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = 1 if mem[ip+1] < mem[mem[ip+2]] else 0
+    machine.ip += 4 
+_instruction_set[107] = _lthipp
+
+def _lthpip(machine):
+    """lthpip (%d)+#%d->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = 1 if mem[mem[ip+1]] < mem[ip+2] else 0
+    machine.ip += 4 
+_instruction_set[1007] = _lthpip
+
+def _lthiip(machine):
+    """lthiip #%d+#%d->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = 1 if mem[ip+1] < mem[ip+2] else 0
+    machine.ip += 4 
+_instruction_set[1107] = _lthiip
+
+def _equppp(machine):
+    """equppp (%d)+(%d)->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = 1 if mem[mem[ip+1]] == mem[mem[ip+2]] else 0
+    machine.ip += 4 
+_instruction_set[8] = _equppp
+
+def _equipp(machine):
+    """equipp #%d+(%d)->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = 1 if mem[ip+1] == mem[mem[ip+2]] else 0
+    machine.ip += 4 
+_instruction_set[108] = _equipp
+
+def _equpip(machine):
+    """equpip (%d)+#%d->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = 1 if mem[mem[ip+1]] == mem[ip+2] else 0
+    machine.ip += 4 
+_instruction_set[1008] = _equpip
+
+def _equiip(machine):
+    """equiip #%d+#%d->(%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+3]] = 1 if mem[ip+1] == mem[ip+2] else 0
+    machine.ip += 4 
+_instruction_set[1108] = _equiip
+
+def _jmptpp(machine):
+    """jmptpp if (%d) goto (%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    if mem[mem[ip+1]] != 0:
+        machine.ip = mem[mem[ip+2]]
+    else:
+        machine.ip += 3
+_instruction_set[5] = _jmptpp
+
+def _jmptip(machine):
+    """jmptip if #%d goto (%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    if mem[ip+1] != 0:
+        machine.ip = mem[mem[ip+2]]
+    else:
+        machine.ip += 3
+_instruction_set[105] = _jmptip
+
+def _jmptpi(machine):
+    """jmptpi if (%d) goto #%d"""
+    mem = machine.mem
+    ip = machine.ip
+    if mem[mem[ip+1]] != 0:
+        machine.ip = mem[ip+2]
+    else:
+        machine.ip += 3
+_instruction_set[1005] = _jmptpi
+
+def _jmptii(machine):
+    """jmptii if #%d goto #%d"""
+    mem = machine.mem
+    ip = machine.ip
+    if mem[ip+1] != 0:
+        machine.ip = mem[ip+2]
+    else:
+        machine.ip += 3
+_instruction_set[1105] = _jmptii
+
+def _jmpfpp(machine):
+    """jmpfpp if (%d) goto (%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    if mem[mem[ip+1]] == 0:
+        machine.ip = mem[mem[ip+2]]
+    else:
+        machine.ip += 3
+_instruction_set[6] = _jmpfpp
+
+def _jmpfip(machine):
+    """jmpfip if #%d goto (%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    if mem[ip+1] == 0:
+        machine.ip = mem[mem[ip+2]]
+    else:
+        machine.ip += 3
+_instruction_set[106] = _jmpfip
+
+def _jmpfpi(machine):
+    """jmpfpi if (%d) goto #%d"""
+    mem = machine.mem
+    ip = machine.ip
+    if mem[mem[ip+1]] == 0:
+        machine.ip = mem[ip+2]
+    else:
+        machine.ip += 3
+_instruction_set[1006] = _jmpfpi
+
+def _jmpfii(machine):
+    """jmpfii if #%d goto #%d"""
+    mem = machine.mem
+    ip = machine.ip
+    if mem[ip+1] == 0:
+        machine.ip = mem[ip+2]
+    else:
+        machine.ip += 3
+_instruction_set[1106] = _jmpfii
+
+def _inputp(machine):
+    """inputp (%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    mem[mem[ip+1]] = machine.input.pop(0)
+    machine.ip += 2
+_instruction_set[3] = _inputp
+
+def _outptp(machine):
+    """outptp (%d)"""
+    mem = machine.mem
+    ip = machine.ip
+    val = mem[mem[ip+1]]
+    machine.output.append(val)
+    if machine.debug:
+        print "OUTPUT",val
+    machine.ip += 2
+_instruction_set[4] = _outptp
+
+def _outpti(machine):
+    """outpti #%d"""
+    mem = machine.mem
+    ip = machine.ip
+    val = mem[ip+1]
+    machine.output.append(val)
+    if machine.debug:
+        print "OUTPUT",val
+    machine.ip += 2
+_instruction_set[104] = _outpti
 
 class MachineQuit(Exception):
     """Intcode machine terminated."""
@@ -23,22 +249,20 @@ class MachineQuit(Exception):
 def _mquit(machine):
     """quit"""
     raise MachineQuit
-
-_instruction_set = {
-    1  : _addi,
-    2  : _muli,
-    99 : _mquit
-    }
+_instruction_set[99] = _mquit
 
 class Machine:
-    def __init__(self,mem,ip=0,debug=False):
+    def __init__(self,mem,ip=0,input=[],debug=False):
         """
         mem : an array of intcode integers, will be copied locally
         ip  : initial instruction pointer.
+        input : an array of values to pass as input
         debug : when true, all instructions print output.
         """
         self.mem = list(mem)
         self.ip = ip
+        self.input = input
+        self.output = []
         self.debug = debug
 
     def run(self):
@@ -75,10 +299,10 @@ class Machine:
                 doc = _instruction_set[opcode].__doc__
                 nargs = doc.count('%d')
                 args = self.mem[loc:loc+nargs]
-                loc += nargs
                 out += doc % tuple(args)
-            except KeyError:
-                out += '????'
+                loc += nargs
+            except (KeyError,TypeError):
+                out += '???? '+str(opcode)
             print out
 
     def dump(self, start, end):
@@ -135,3 +359,28 @@ if __name__ == "__main__":
     print 'Done in %d steps' % steps
 
     assert(machine.mem[0] == 3058646)
+
+    print '==========='
+    print ' aoc day 5 '
+    print '==========='
+    print 'test 1'
+    machine = Machine([3,0,4,0,99],input=[1],debug=True)
+    machine.run()
+    print 'Final output:',machine.output
+    assert(len(machine.output) == 1 and machine.output[0] == 1)
+
+    print 'test 2'
+    machine = Machine([1002,4,3,4,33],debug=True)
+    machine.run()
+    assert(machine.mem[4] == 99)
+
+    print 'test 3'
+    machine = Machine([3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9],
+                      input=[0],debug=True)
+    machine.run()
+    assert(len(machine.output) == 1 and machine.output[0] == 0)
+    machine = Machine([3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9],
+                      input=[1],debug=True)
+    machine.run()
+    assert(len(machine.output) == 1 and machine.output[0] == 1)
+
