@@ -254,12 +254,20 @@ _instruction_set[99] = _mquit
 class Machine:
     def __init__(self,mem,ip=0,input=[],debug=False):
         """
-        mem : an array of intcode integers, will be copied locally
+        mem : a filename containing a comma-separated memory image
+              OR
+              an array of intcode integers, will be copied locally
         ip  : initial instruction pointer.
         input : an array of values to pass as input
         debug : when true, all instructions print output.
         """
-        self.mem = list(mem)
+        if isinstance(mem,str):
+            with open(mem, 'r') as memfile:
+                content = memfile.read()
+            self.mem = [int(x) for x in content.split(',')]
+        else:
+            self.mem = list(mem)
+
         self.ip = ip
         self.input = input
         self.output = []
@@ -290,7 +298,7 @@ class Machine:
             try:
                 opcode = self.mem[loc]
             except IndexError:
-                print '<end of memory>'
+                print '       <end of memory>'
                 return
 
             loc += 1
@@ -302,7 +310,7 @@ class Machine:
                 out += doc % tuple(args)
                 loc += nargs
             except (KeyError,TypeError):
-                out += '???? '+str(opcode)
+                out += '????   '+str(opcode)
             print out
 
     def dump(self, start, end):
@@ -346,41 +354,54 @@ if __name__ == "__main__":
     print '==========='
     print ' aoc day 2 '
     print '==========='
-    aocday2 = [1,0,0,3,1,1,2,3,1,3,4,3,1,5,0,3,2,1,6,19,2,19,6,23,1,23,5,27,1,9,27,31,1,31,10,35,2,35,9,39,1,5,39,43,2,43,9,47,1,5,47,51,2,51,13,55,1,55,10,59,1,59,10,63,2,9,63,67,1,67,5,71,2,13,71,75,1,75,10,79,1,79,6,83,2,13,83,87,1,87,6,91,1,6,91,95,1,10,95,99,2,99,6,103,1,103,5,107,2,6,107,111,1,10,111,115,1,115,5,119,2,6,119,123,1,123,5,127,2,127,6,131,1,131,5,135,1,2,135,139,1,139,13,0,99,2,0,14,0]
-    aocday2[1] = 12
-    aocday2[2] = 2
-    machine = Machine(aocday2)
+    machine = Machine("day2/input.txt")
+    machine.mem[1] = 12
+    machine.mem[2] = 2
     print 'Disassembly:'
     machine.disassemble(0,-1)
 
     print 'Running...'
     steps = machine.run()
-    assert(steps == 36)
     print 'Done in %d steps' % steps
-
+    assert(steps == 36)
+    print 'Part 1 answer:',machine.mem[0]
     assert(machine.mem[0] == 3058646)
 
     print '==========='
     print ' aoc day 5 '
     print '==========='
     print 'test 1'
-    machine = Machine([3,0,4,0,99],input=[1],debug=True)
+    machine = Machine("day5/test1.txt",input=[1],debug=True)
     machine.run()
-    print 'Final output:',machine.output
-    assert(len(machine.output) == 1 and machine.output[0] == 1)
+    print '    output:',machine.output
+    assert(machine.output == [1])
 
     print 'test 2'
-    machine = Machine([1002,4,3,4,33],debug=True)
+    machine = Machine("day5/test2.txt",debug=True)
     machine.run()
     assert(machine.mem[4] == 99)
 
     print 'test 3'
-    machine = Machine([3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9],
-                      input=[0],debug=True)
-    machine.run()
-    assert(len(machine.output) == 1 and machine.output[0] == 0)
-    machine = Machine([3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9],
-                      input=[1],debug=True)
-    machine.run()
-    assert(len(machine.output) == 1 and machine.output[0] == 1)
+    for x in [0,1]:
+        machine = Machine("day5/test3.txt",input=[x])
+        machine.run()
+        assert(machine.output == [x])
+    print '    PASSED'
 
+    print 'test 4'
+    # check if input is <, =, or > 8
+    inputs =  [  0,   1,   7,    8,    9, 1000]
+    outputs = [999, 999, 999, 1000, 1001, 1001]
+    for i in range(len(inputs)):
+        machine = Machine("day5/test4.txt",input=[inputs[i]])
+        if i == 0:
+            machine.disassemble(0,1000)
+        machine.run()
+        assert(machine.output == [outputs[i]])
+    print '    PASSED'
+
+    print 'Part 2 answer:'
+    machine = Machine("day5/input.txt",input=[5])
+    machine.run()
+    print '    Diagnostic code:',machine.output[0]
+    assert(machine.output == [15724522])
