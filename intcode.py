@@ -4,134 +4,140 @@
 
 _instruction_set = {}
 
+def instruction(code):
+    def add_to_set(func):
+        _instruction_set[code] = func
+    return add_to_set
+
+@instruction(1)
 def _addppp(machine):
     """addppp (%d)+(%d)->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = mem[mem[ip+1]] + mem[mem[ip+2]]
     machine.ip += 4 
-_instruction_set[1] = _addppp
 
+@instruction(101)
 def _addipp(machine):
     """addipp #%d+(%d)->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = mem[ip+1] + mem[mem[ip+2]]
     machine.ip += 4 
-_instruction_set[101] = _addipp
 
+@instruction(1001)
 def _addpip(machine):
     """addpip (%d)+#%d->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = mem[mem[ip+1]] + mem[ip+2]
     machine.ip += 4 
-_instruction_set[1001] = _addpip
 
+@instruction(1101)
 def _addiip(machine):
     """addiip #%d+#%d->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = mem[ip+1] + mem[ip+2]
     machine.ip += 4 
-_instruction_set[1101] = _addiip
 
+@instruction(2)
 def _mulppp(machine):
     """mulppp (%d)+(%d)->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = mem[mem[ip+1]] * mem[mem[ip+2]]
     machine.ip += 4 
-_instruction_set[2] = _mulppp
 
+@instruction(102)
 def _mulipp(machine):
     """mulipp #%d+(%d)->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = mem[ip+1] * mem[mem[ip+2]]
     machine.ip += 4 
-_instruction_set[102] = _mulipp
 
+@instruction(1002)
 def _mulpip(machine):
     """mulpip (%d)+#%d->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = mem[mem[ip+1]] * mem[ip+2]
     machine.ip += 4 
-_instruction_set[1002] = _mulpip
 
+@instruction(1102)
 def _muliip(machine):
     """muliip #%d+#%d->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = mem[ip+1] * mem[ip+2]
     machine.ip += 4 
-_instruction_set[1102] = _muliip
 
+@instruction(7)
 def _lthppp(machine):
     """lthppp (%d)+(%d)->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = 1 if mem[mem[ip+1]] < mem[mem[ip+2]] else 0
     machine.ip += 4 
-_instruction_set[7] = _lthppp
 
+@instruction(107)
 def _lthipp(machine):
     """lthipp #%d+(%d)->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = 1 if mem[ip+1] < mem[mem[ip+2]] else 0
     machine.ip += 4 
-_instruction_set[107] = _lthipp
 
+@instruction(1007)
 def _lthpip(machine):
     """lthpip (%d)+#%d->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = 1 if mem[mem[ip+1]] < mem[ip+2] else 0
     machine.ip += 4 
-_instruction_set[1007] = _lthpip
 
+@instruction(1107)
 def _lthiip(machine):
     """lthiip #%d+#%d->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = 1 if mem[ip+1] < mem[ip+2] else 0
     machine.ip += 4 
-_instruction_set[1107] = _lthiip
 
+@instruction(8)
 def _equppp(machine):
     """equppp (%d)+(%d)->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = 1 if mem[mem[ip+1]] == mem[mem[ip+2]] else 0
     machine.ip += 4 
-_instruction_set[8] = _equppp
 
+@instruction(108)
 def _equipp(machine):
     """equipp #%d+(%d)->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = 1 if mem[ip+1] == mem[mem[ip+2]] else 0
     machine.ip += 4 
-_instruction_set[108] = _equipp
 
+@instruction(1008)
 def _equpip(machine):
     """equpip (%d)+#%d->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = 1 if mem[mem[ip+1]] == mem[ip+2] else 0
     machine.ip += 4 
-_instruction_set[1008] = _equpip
 
+@instruction(1108)
 def _equiip(machine):
     """equiip #%d+#%d->(%d)"""
     mem = machine.mem
     ip = machine.ip
     mem[mem[ip+3]] = 1 if mem[ip+1] == mem[ip+2] else 0
     machine.ip += 4 
-_instruction_set[1108] = _equiip
 
+@instruction(5)
 def _jmptpp(machine):
     """jmptpp if (%d) goto (%d)"""
     mem = machine.mem
@@ -140,8 +146,8 @@ def _jmptpp(machine):
         machine.ip = mem[mem[ip+2]]
     else:
         machine.ip += 3
-_instruction_set[5] = _jmptpp
 
+@instruction(105)
 def _jmptip(machine):
     """jmptip if #%d goto (%d)"""
     mem = machine.mem
@@ -150,8 +156,8 @@ def _jmptip(machine):
         machine.ip = mem[mem[ip+2]]
     else:
         machine.ip += 3
-_instruction_set[105] = _jmptip
 
+@instruction(1005)
 def _jmptpi(machine):
     """jmptpi if (%d) goto #%d"""
     mem = machine.mem
@@ -160,8 +166,8 @@ def _jmptpi(machine):
         machine.ip = mem[ip+2]
     else:
         machine.ip += 3
-_instruction_set[1005] = _jmptpi
 
+@instruction(1105)
 def _jmptii(machine):
     """jmptii if #%d goto #%d"""
     mem = machine.mem
@@ -170,8 +176,8 @@ def _jmptii(machine):
         machine.ip = mem[ip+2]
     else:
         machine.ip += 3
-_instruction_set[1105] = _jmptii
 
+@instruction(6)
 def _jmpfpp(machine):
     """jmpfpp if (%d) goto (%d)"""
     mem = machine.mem
@@ -180,8 +186,8 @@ def _jmpfpp(machine):
         machine.ip = mem[mem[ip+2]]
     else:
         machine.ip += 3
-_instruction_set[6] = _jmpfpp
 
+@instruction(106)
 def _jmpfip(machine):
     """jmpfip if #%d goto (%d)"""
     mem = machine.mem
@@ -190,8 +196,8 @@ def _jmpfip(machine):
         machine.ip = mem[mem[ip+2]]
     else:
         machine.ip += 3
-_instruction_set[106] = _jmpfip
 
+@instruction(1006)
 def _jmpfpi(machine):
     """jmpfpi if (%d) goto #%d"""
     mem = machine.mem
@@ -200,8 +206,8 @@ def _jmpfpi(machine):
         machine.ip = mem[ip+2]
     else:
         machine.ip += 3
-_instruction_set[1006] = _jmpfpi
 
+@instruction(1106)
 def _jmpfii(machine):
     """jmpfii if #%d goto #%d"""
     mem = machine.mem
@@ -210,12 +216,12 @@ def _jmpfii(machine):
         machine.ip = mem[ip+2]
     else:
         machine.ip += 3
-_instruction_set[1106] = _jmpfii
 
 class EInput(Exception):
     """Input would block."""
     pass
 
+@instruction(3)
 def _inputp(machine):
     """inputp (%d)"""
     mem = machine.mem
@@ -226,12 +232,12 @@ def _inputp(machine):
         raise EInput
     mem[mem[ip+1]] = val
     machine.ip += 2
-_instruction_set[3] = _inputp
 
 class EOutput(Exception):
     """Output would block."""
     pass
 
+@instruction(4)
 def _outptp(machine):
     """outptp (%d)"""
     mem = machine.mem
@@ -242,8 +248,7 @@ def _outptp(machine):
     machine.steps += 1 # exception will skip the step counting
     raise EOutput
 
-_instruction_set[4] = _outptp
-
+@instruction(104)
 def _outpti(machine):
     """outpti #%d"""
     mem = machine.mem
@@ -253,16 +258,15 @@ def _outpti(machine):
     machine.ip += 2
     machine.steps += 1 # exception will skip the step counting
     raise EOutput
-_instruction_set[104] = _outpti
 
 class EQuit(Exception):
     """Intcode machine terminated."""
     pass
 
+@instruction(99)
 def _mquit(machine):
     """quit"""
     raise EQuit
-_instruction_set[99] = _mquit
 
 class Machine:
     def __init__(self,mem,input=[],ip=0,debug=False):
