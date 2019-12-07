@@ -10,253 +10,199 @@ def instruction(code):
     return add_to_set
 
 @instruction(1)
-def _addppp(machine):
+def _addppp(m):
     """addppp (%d)+(%d)->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = mem[mem[ip+1]] + mem[mem[ip+2]]
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = m.mem[m.mem[m.ip+1]] + m.mem[m.mem[m.ip+2]]
+    m.ip += 4 
 
 @instruction(101)
-def _addipp(machine):
+def _addipp(m):
     """addipp #%d+(%d)->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = mem[ip+1] + mem[mem[ip+2]]
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = m.mem[m.ip+1] + m.mem[m.mem[m.ip+2]]
+    m.ip += 4 
 
 @instruction(1001)
-def _addpip(machine):
+def _addpip(m):
     """addpip (%d)+#%d->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = mem[mem[ip+1]] + mem[ip+2]
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = m.mem[m.mem[m.ip+1]] + m.mem[m.ip+2]
+    m.ip += 4 
 
 @instruction(1101)
-def _addiip(machine):
+def _addiip(m):
     """addiip #%d+#%d->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = mem[ip+1] + mem[ip+2]
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = m.mem[m.ip+1] + m.mem[m.ip+2]
+    m.ip += 4 
 
 @instruction(2)
-def _mulppp(machine):
+def _mulppp(m):
     """mulppp (%d)+(%d)->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = mem[mem[ip+1]] * mem[mem[ip+2]]
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = m.mem[m.mem[m.ip+1]] * m.mem[m.mem[m.ip+2]]
+    m.ip += 4 
 
 @instruction(102)
-def _mulipp(machine):
+def _mulipp(m):
     """mulipp #%d+(%d)->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = mem[ip+1] * mem[mem[ip+2]]
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = m.mem[m.ip+1] * m.mem[m.mem[m.ip+2]]
+    m.ip += 4 
 
 @instruction(1002)
-def _mulpip(machine):
+def _mulpip(m):
     """mulpip (%d)+#%d->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = mem[mem[ip+1]] * mem[ip+2]
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = m.mem[m.mem[m.ip+1]] * m.mem[m.ip+2]
+    m.ip += 4 
 
 @instruction(1102)
-def _muliip(machine):
+def _muliip(m):
     """muliip #%d+#%d->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = mem[ip+1] * mem[ip+2]
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = m.mem[m.ip+1] * m.mem[m.ip+2]
+    m.ip += 4 
 
 @instruction(7)
-def _lthppp(machine):
+def _lthppp(m):
     """lthppp (%d)+(%d)->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = 1 if mem[mem[ip+1]] < mem[mem[ip+2]] else 0
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.mem[m.ip+1]] < m.mem[m.mem[m.ip+2]] else 0
+    m.ip += 4 
 
 @instruction(107)
-def _lthipp(machine):
+def _lthipp(m):
     """lthipp #%d+(%d)->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = 1 if mem[ip+1] < mem[mem[ip+2]] else 0
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.ip+1] < m.mem[m.mem[m.ip+2]] else 0
+    m.ip += 4 
 
 @instruction(1007)
-def _lthpip(machine):
+def _lthpip(m):
     """lthpip (%d)+#%d->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = 1 if mem[mem[ip+1]] < mem[ip+2] else 0
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.mem[m.ip+1]] < m.mem[m.ip+2] else 0
+    m.ip += 4 
 
 @instruction(1107)
-def _lthiip(machine):
+def _lthiip(m):
     """lthiip #%d+#%d->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = 1 if mem[ip+1] < mem[ip+2] else 0
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.ip+1] < m.mem[m.ip+2] else 0
+    m.ip += 4 
 
 @instruction(8)
-def _equppp(machine):
+def _equppp(m):
     """equppp (%d)+(%d)->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = 1 if mem[mem[ip+1]] == mem[mem[ip+2]] else 0
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.mem[m.ip+1]] == m.mem[m.mem[m.ip+2]] else 0
+    m.ip += 4 
 
 @instruction(108)
-def _equipp(machine):
+def _equipp(m):
     """equipp #%d+(%d)->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = 1 if mem[ip+1] == mem[mem[ip+2]] else 0
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.ip+1] == m.mem[m.mem[m.ip+2]] else 0
+    m.ip += 4 
 
 @instruction(1008)
-def _equpip(machine):
+def _equpip(m):
     """equpip (%d)+#%d->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = 1 if mem[mem[ip+1]] == mem[ip+2] else 0
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.mem[m.ip+1]] == m.mem[m.ip+2] else 0
+    m.ip += 4 
 
 @instruction(1108)
-def _equiip(machine):
+def _equiip(m):
     """equiip #%d+#%d->(%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    mem[mem[ip+3]] = 1 if mem[ip+1] == mem[ip+2] else 0
-    machine.ip += 4 
+    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.ip+1] == m.mem[m.ip+2] else 0
+    m.ip += 4 
 
 @instruction(5)
-def _jmptpp(machine):
+def _jmptpp(m):
     """jmptpp if (%d) goto (%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    if mem[mem[ip+1]] != 0:
-        machine.ip = mem[mem[ip+2]]
+    if m.mem[m.mem[m.ip+1]] != 0:
+        m.ip = m.mem[m.mem[m.ip+2]]
     else:
-        machine.ip += 3
+        m.ip += 3
 
 @instruction(105)
-def _jmptip(machine):
+def _jmptip(m):
     """jmptip if #%d goto (%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    if mem[ip+1] != 0:
-        machine.ip = mem[mem[ip+2]]
+    if m.mem[m.ip+1] != 0:
+        m.ip = m.mem[m.mem[m.ip+2]]
     else:
-        machine.ip += 3
+        m.ip += 3
 
 @instruction(1005)
-def _jmptpi(machine):
+def _jmptpi(m):
     """jmptpi if (%d) goto #%d"""
-    mem = machine.mem
-    ip = machine.ip
-    if mem[mem[ip+1]] != 0:
-        machine.ip = mem[ip+2]
+    if m.mem[m.mem[m.ip+1]] != 0:
+        m.ip = m.mem[m.ip+2]
     else:
-        machine.ip += 3
+        m.ip += 3
 
 @instruction(1105)
-def _jmptii(machine):
+def _jmptii(m):
     """jmptii if #%d goto #%d"""
-    mem = machine.mem
-    ip = machine.ip
-    if mem[ip+1] != 0:
-        machine.ip = mem[ip+2]
+    if m.mem[m.ip+1] != 0:
+        m.ip = m.mem[m.ip+2]
     else:
-        machine.ip += 3
+        m.ip += 3
 
 @instruction(6)
-def _jmpfpp(machine):
+def _jmpfpp(m):
     """jmpfpp if (%d) goto (%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    if mem[mem[ip+1]] == 0:
-        machine.ip = mem[mem[ip+2]]
+    if m.mem[m.mem[m.ip+1]] == 0:
+        m.ip = m.mem[m.mem[m.ip+2]]
     else:
-        machine.ip += 3
+        m.ip += 3
 
 @instruction(106)
-def _jmpfip(machine):
+def _jmpfip(m):
     """jmpfip if #%d goto (%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    if mem[ip+1] == 0:
-        machine.ip = mem[mem[ip+2]]
+    if m.mem[m.ip+1] == 0:
+        m.ip = m.mem[m.mem[m.ip+2]]
     else:
-        machine.ip += 3
+        m.ip += 3
 
 @instruction(1006)
-def _jmpfpi(machine):
+def _jmpfpi(m):
     """jmpfpi if (%d) goto #%d"""
-    mem = machine.mem
-    ip = machine.ip
-    if mem[mem[ip+1]] == 0:
-        machine.ip = mem[ip+2]
+    if m.mem[m.mem[m.ip+1]] == 0:
+        m.ip = m.mem[m.ip+2]
     else:
-        machine.ip += 3
+        m.ip += 3
 
 @instruction(1106)
-def _jmpfii(machine):
+def _jmpfii(m):
     """jmpfii if #%d goto #%d"""
-    mem = machine.mem
-    ip = machine.ip
-    if mem[ip+1] == 0:
-        machine.ip = mem[ip+2]
+    if m.mem[m.ip+1] == 0:
+        m.ip = m.mem[m.ip+2]
     else:
-        machine.ip += 3
+        m.ip += 3
 
 class EInput(Exception):
     """Input would block."""
     pass
 
 @instruction(3)
-def _inputp(machine):
+def _inputp(m):
     """inputp (%d)"""
-    mem = machine.mem
-    ip = machine.ip
     try:
-        val = machine.input.pop(0)
+        val = m.input.pop(0)
     except IndexError:
         raise EInput
-    mem[mem[ip+1]] = val
-    machine.ip += 2
+    m.mem[m.mem[m.ip+1]] = val
+    m.ip += 2
 
 class EOutput(Exception):
     """Output would block."""
     pass
 
 @instruction(4)
-def _outptp(machine):
+def _outptp(m):
     """outptp (%d)"""
-    mem = machine.mem
-    ip = machine.ip
-    val = mem[mem[ip+1]]
-    machine.output.append(val)
-    machine.ip += 2
-    machine.steps += 1 # exception will skip the step counting
+    val = m.mem[m.mem[m.ip+1]]
+    m.output.append(val)
+    m.ip += 2
+    m.steps += 1 # exception will skip the step counting
     raise EOutput
 
 @instruction(104)
-def _outpti(machine):
+def _outpti(m):
     """outpti #%d"""
-    mem = machine.mem
-    ip = machine.ip
-    val = mem[ip+1]
-    machine.output.append(val)
-    machine.ip += 2
-    machine.steps += 1 # exception will skip the step counting
+    val = m.mem[m.ip+1]
+    m.output.append(val)
+    m.ip += 2
+    m.steps += 1 # exception will skip the step counting
     raise EOutput
 
 class EQuit(Exception):
@@ -264,7 +210,7 @@ class EQuit(Exception):
     pass
 
 @instruction(99)
-def _mquit(machine):
+def _mquit(m):
     """quit"""
     raise EQuit
 
@@ -305,9 +251,11 @@ class Machine:
             self.step()
 
     def runq(self):
-        """Run until quit, not blocking for output.
+        """
+        Run until quit, not blocking for output.
         Returns number of steps.
-        This is how programs ran before Day 7."""
+        This is how programs ran before Day 7.
+        """
         while True:
             try:
                 self.step()
@@ -317,8 +265,10 @@ class Machine:
                 pass
 
     def disassemble(self, loc, numinst = 1):
-        """Disassemble numinst instructions of code starting at loc.
-        Pass numinst=0 to disassemble until memory ends."""
+        """
+        Disassemble numinst instructions of code starting at loc.
+        Pass numinst=0 to disassemble until memory ends.
+        """
         while numinst != 0:
             out = "%5d: " % loc
             try:
@@ -340,6 +290,7 @@ class Machine:
             print out
 
     def dump(self, start, end):
+        """Memory dump from start address to end address."""
         print ("%5d:" % start),
         m = start
         while m < end:
