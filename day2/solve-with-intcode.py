@@ -21,7 +21,7 @@ for line in inputlines:
 machine = intcode.Machine(mem)
 machine.mem[1] = 12
 machine.mem[2] = 2
-machine.run()
+machine.runq()
 print 'part 1:'
 print machine.mem[0]
 
@@ -32,7 +32,7 @@ for noun in range(100):
         machine = intcode.Machine(mem)
         machine.mem[1] = noun
         machine.mem[2] = verb
-        machine.run()
+        machine.runq()
         if machine.mem[0] == 19690720:
             print noun, verb, 100*noun + verb
             break
