@@ -8,6 +8,7 @@ import sys
 sys.path.append("..")
 import aocutils
 import intcode
+from itertools import permutations
 
 args = aocutils.parse_args()
 
@@ -17,19 +18,8 @@ with open(args.file, 'r') as memfile:
     content = memfile.read()
     mem = [int(x) for x in content.split(',')]
 
-def numberToBase(n, b):
-    if n == 0:
-        return [0]
-    digits = []
-    while n:
-        digits.append(int(n % b))
-        n //= b
-    return digits[::-1]
-
 def amploop(phases):
-    amps = []
-    for p in phases:
-        amps.append(intcode.Machine(mem,[p]))
+    amps = [intcode.Machine(mem,[p]) for p in phases]
     
     a = 0
     signal = 0
@@ -48,22 +38,17 @@ def amploop(phases):
             if a == 0:
                 print 'thrust',signal
 
-maxthrust = 0
-for i in range(5**numamps):
-    phases = numberToBase(i,5)
-    while len(phases) < numamps:
-        phases.insert(0,0)
-    if len(set(phases)) < 5:
-        continue
-    phases = [x+5 for x in phases]
-    thrust = amploop(phases)
+for part in [0,1]:
+    maxthrust = 0
+    for phases in permutations(range(part*5,5+part*5)):
+        thrust = amploop(phases)
 
-    if args.verbose > 1:
-        print phases,thrust
+        if args.verbose > 1:
+            print phases,thrust
 
-    if thrust > maxthrust:
-        maxthrust = thrust
-        maxphases = phases
+        if thrust > maxthrust:
+            maxthrust = thrust
+            maxphases = phases
 
-print maxthrust, maxphases
+    print 'part ',part+1,':',maxthrust, maxphases
 

@@ -8,6 +8,7 @@ import sys
 sys.path.append("..")
 import aocutils
 import intcode
+from itertools import permutations
 
 numamps = 5
 args = aocutils.parse_args()
@@ -24,23 +25,8 @@ def find_signal(phases):
         input = amp.output[0]
     return input
 
-def numberToBase(n, b):
-    if n == 0:
-        return [0]
-    digits = []
-    while n:
-        digits.append(int(n % b))
-        n //= b
-    return digits[::-1]
-
 maxthrust = 0
-for i in range(5**numamps):
-    phases = numberToBase(i,5)
-    while len(phases) < numamps:
-        phases.insert(0,0)
-    if len(set(phases)) < 5:
-        continue
-
+for phases in permutations(range(numamps)):
     thrust = find_signal(phases)
     if args.verbose > 1:
         print phases,thrust
