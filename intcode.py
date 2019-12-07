@@ -386,12 +386,7 @@ if __name__ == "__main__":
     print '==========='
     print ' aoc day 7 '
     print '==========='
-    with open("day7/input.txt", 'r') as memfile:
-        content = memfile.read()
-        mem = [int(x) for x in content.split(',')]
-    amps = []
-    for p in [7,6,5,8,9]:
-        amps.append(Machine(mem,[p]))
+    amps = [Machine("day7/input.txt",[p]) for p in [7,6,5,8,9]]
     a = 0
     signal = 0
     while True:
