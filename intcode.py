@@ -212,11 +212,19 @@ def _jmpfii(machine):
         machine.ip += 3
 _instruction_set[1106] = _jmpfii
 
+class InputBlock(Exception):
+    """Input would block."""
+    pass
+
 def _inputp(machine):
     """inputp (%d)"""
     mem = machine.mem
     ip = machine.ip
-    mem[mem[ip+1]] = machine.input.pop(0)
+    try:
+        val = machine.input.pop(0)
+    except IndexError:
+        raise InputBlock
+    mem[mem[ip+1]] = val
     machine.ip += 2
 _instruction_set[3] = _inputp
 
@@ -252,7 +260,7 @@ def _mquit(machine):
 _instruction_set[99] = _mquit
 
 class Machine:
-    def __init__(self,mem,ip=0,input=[],debug=False):
+    def __init__(self,mem,input=[],ip=0,debug=False):
         """
         mem : a filename containing a comma-separated memory image
               OR
@@ -281,6 +289,19 @@ class Machine:
                 self.step()
                 steps += 1
         except MachineQuit:
+            return steps
+
+    def run_until_block(self):
+        """Execute until block on I/O or quit instruction.
+        Return number of steps executed."""
+        steps = 0
+        try:
+            while True:
+                self.step()
+                steps += 1
+                if self.output:
+                    return steps
+        except (MachineQuit, InputBlock):
             return steps
 
     def step(self):
