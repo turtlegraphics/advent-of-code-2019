@@ -20,7 +20,7 @@ def find_signal(phases):
     input = 0
     for i in range(numamps):
         amp = intcode.Machine(mem,input = [phases[i],input])
-        amp.run()
+        amp.runq()
         input = amp.output[0]
     return input
 
@@ -42,10 +42,11 @@ for i in range(5**numamps):
         continue
 
     thrust = find_signal(phases)
-    print phases,thrust
+    if args.verbose > 1:
+        print phases,thrust
+
     if thrust > maxthrust:
         maxthrust = thrust
-        print 'new max',maxthrust
 
 print maxthrust
 

@@ -9,8 +9,9 @@ sys.path.append("..")
 import aocutils
 import intcode
 
-numamps = 5
 args = aocutils.parse_args()
+
+numamps = 5
 
 with open(args.file, 'r') as memfile:
     content = memfile.read()
@@ -36,13 +37,14 @@ def amploop(phases):
         amps[a].input.append(signal)
         if args.verbose > 2:
             print 'running',a,'with input',amps[a].input
-        amps[a].run_until_block()
         try:
+            amps[a].run()
+        except intcode.EOutput:
             signal = amps[a].output.pop()
-        except IndexError:
+        except intcode.EQuit:
             return signal
         a = (a + 1) % numamps
-        if args.verbose > 1:
+        if args.verbose > 2:
             if a == 0:
                 print 'thrust',signal
 
@@ -54,13 +56,13 @@ for i in range(5**numamps):
     if len(set(phases)) < 5:
         continue
     phases = [x+5 for x in phases]
-    print phases
-
     thrust = amploop(phases)
-    print phases,thrust
+
+    if args.verbose > 1:
+        print phases,thrust
+
     if thrust > maxthrust:
         maxthrust = thrust
-        print 'new max',maxthrust
 
 print maxthrust
 
