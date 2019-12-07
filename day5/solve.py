@@ -14,10 +14,10 @@ args = aocutils.parse_args()
 # part 1
 print "Part 1"
 machine = intcode.Machine(args.file,input=[1])
-machine.run()
+machine.runq()
 print machine.output
 
 print "Part 2"
 machine = intcode.Machine(args.file,input=[5])
-machine.run()
+machine.runq()
 print machine.output
