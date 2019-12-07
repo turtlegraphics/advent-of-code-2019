@@ -427,3 +427,27 @@ if __name__ == "__main__":
     machine.runq()
     print '    Diagnostic code:',machine.output[0]
     assert(machine.output == [15724522])
+
+    print '==========='
+    print ' aoc day 7 '
+    print '==========='
+    with open("day7/input.txt", 'r') as memfile:
+        content = memfile.read()
+        mem = [int(x) for x in content.split(',')]
+    amps = []
+    for p in [7,6,5,8,9]:
+        amps.append(Machine(mem,[p]))
+    a = 0
+    signal = 0
+    while True:
+        amps[a].input.append(signal)
+        try:
+            amps[a].run()
+        except EOutput:
+            signal = amps[a].output.pop()
+        except EQuit:
+            break
+        a = (a + 1) % 5
+    print 'Thrust using feedback loop (part 2):',signal
+    assert(signal == 36384144)
+    print '    PASSED'
