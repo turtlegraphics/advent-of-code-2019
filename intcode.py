@@ -212,7 +212,7 @@ def _jmpfii(machine):
         machine.ip += 3
 _instruction_set[1106] = _jmpfii
 
-class InputBlock(Exception):
+class EInput(Exception):
     """Input would block."""
     pass
 
@@ -223,10 +223,14 @@ def _inputp(machine):
     try:
         val = machine.input.pop(0)
     except IndexError:
-        raise InputBlock
+        raise EInput
     mem[mem[ip+1]] = val
     machine.ip += 2
 _instruction_set[3] = _inputp
+
+class EOutput(Exception):
+    """Output would block."""
+    pass
 
 def _outptp(machine):
     """outptp (%d)"""
@@ -234,9 +238,10 @@ def _outptp(machine):
     ip = machine.ip
     val = mem[mem[ip+1]]
     machine.output.append(val)
-    if machine.debug:
-        print "OUTPUT",val
     machine.ip += 2
+    machine.steps += 1 # exception will skip the step counting
+    raise EOutput
+
 _instruction_set[4] = _outptp
 
 def _outpti(machine):
@@ -245,18 +250,18 @@ def _outpti(machine):
     ip = machine.ip
     val = mem[ip+1]
     machine.output.append(val)
-    if machine.debug:
-        print "OUTPUT",val
     machine.ip += 2
+    machine.steps += 1 # exception will skip the step counting
+    raise EOutput
 _instruction_set[104] = _outpti
 
-class MachineQuit(Exception):
+class EQuit(Exception):
     """Intcode machine terminated."""
     pass
 
 def _mquit(machine):
     """quit"""
-    raise MachineQuit
+    raise EQuit
 _instruction_set[99] = _mquit
 
 class Machine:
@@ -280,29 +285,7 @@ class Machine:
         self.input = input
         self.output = []
         self.debug = debug
-
-    def run(self):
-        """Execute until quit instruction. Return number of steps executed."""
-        steps = 0
-        try:
-            while True:
-                self.step()
-                steps += 1
-        except MachineQuit:
-            return steps
-
-    def run_until_block(self):
-        """Execute until block on I/O or quit instruction.
-        Return number of steps executed."""
-        steps = 0
-        try:
-            while True:
-                self.step()
-                steps += 1
-                if self.output:
-                    return steps
-        except (MachineQuit, InputBlock):
-            return steps
+        self.steps = 0
 
     def step(self):
         """Execute the instruction at the current ip."""
@@ -310,6 +293,24 @@ class Machine:
             self.disassemble(self.ip)
         op = _instruction_set[self.mem[self.ip]]
         op(self)
+        self.steps += 1
+
+    def run(self):
+        """Run until an exception (EQuit, EInput, EOutput)"""
+        while True:
+            self.step()
+
+    def runq(self):
+        """Run until quit, not blocking for output.
+        Returns number of steps.
+        This is how programs ran before Day 7."""
+        while True:
+            try:
+                self.step()
+            except EQuit:
+                return self.steps
+            except EOutput:
+                pass
 
     def disassemble(self, loc, numinst = 1):
         """Disassemble numinst instructions of code starting at loc.
@@ -363,7 +364,7 @@ if __name__ == "__main__":
     machine.disassemble(0,10)
 
     print 'Running...'
-    steps = machine.run()
+    steps = machine.runq()
     assert(steps == 2)
     print 'Done in %d steps' % steps
 
@@ -382,7 +383,7 @@ if __name__ == "__main__":
     machine.disassemble(0,-1)
 
     print 'Running...'
-    steps = machine.run()
+    steps = machine.runq()
     print 'Done in %d steps' % steps
     assert(steps == 36)
     print 'Part 1 answer:',machine.mem[0]
@@ -393,19 +394,19 @@ if __name__ == "__main__":
     print '==========='
     print 'test 1'
     machine = Machine("day5/test1.txt",input=[1],debug=True)
-    machine.run()
+    machine.runq()
     print '    output:',machine.output
     assert(machine.output == [1])
 
     print 'test 2'
     machine = Machine("day5/test2.txt",debug=True)
-    machine.run()
+    machine.runq()
     assert(machine.mem[4] == 99)
 
     print 'test 3'
     for x in [0,1]:
         machine = Machine("day5/test3.txt",input=[x])
-        machine.run()
+        machine.runq()
         assert(machine.output == [x])
     print '    PASSED'
 
@@ -417,12 +418,12 @@ if __name__ == "__main__":
         machine = Machine("day5/test4.txt",input=[inputs[i]])
         if i == 0:
             machine.disassemble(0,1000)
-        machine.run()
+        machine.runq()
         assert(machine.output == [outputs[i]])
     print '    PASSED'
 
     print 'Part 2 answer:'
     machine = Machine("day5/input.txt",input=[5])
-    machine.run()
+    machine.runq()
     print '    Diagnostic code:',machine.output[0]
     assert(machine.output == [15724522])
