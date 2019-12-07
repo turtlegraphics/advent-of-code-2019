@@ -33,7 +33,7 @@ def amploop(phases):
     
     a = 0
     signal = 0
-    for i in range(100):
+    while True:
         amps[a].input.append(signal)
         if args.verbose > 2:
             print 'running',a,'with input',amps[a].input
@@ -63,6 +63,7 @@ for i in range(5**numamps):
 
     if thrust > maxthrust:
         maxthrust = thrust
+        maxphases = phases
 
-print maxthrust
+print maxthrust, maxphases
 
