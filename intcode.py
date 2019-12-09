@@ -1,9 +1,16 @@
 #
 # intcode machine
 #
+from inspect import getargspec
+
+instruction_set = {}
+def opcode(code):
+    def add_to_set(func):
+        instruction_set[code] = (func)
+    return add_to_set
+
 
 _instruction_set = {}
-
 def instruction(code):
     def add_to_set(func):
         _instruction_set[code] = func
@@ -240,7 +247,9 @@ class Machine:
     def step(self):
         """Execute the instruction at the current ip."""
         if self.debug:
-            self.disassemble(self.ip)
+            out, offset = self._disone(self.ip)
+            print out
+
         op = _instruction_set[self.mem[self.ip]]
         op(self)
         self.steps += 1
@@ -264,33 +273,71 @@ class Machine:
             except EOutput:
                 pass
 
-    def disassemble(self, loc, numinst = 1):
+    mode_desc = {
+        0 : '(%d)',
+        1 : '#%d',
+        2 : '(%d+b)'
+        }
+
+    def _disone(self, loc):
         """
-        Disassemble numinst instructions of code starting at loc.
-        Pass numinst=0 to disassemble until memory ends.
+        Disassemble the single instruction at loc.
+        Returns the disassembled string and how far to advance in memory.
+        """
+        try:
+            instruction = self.mem[loc]
+        except IndexError:
+            return('       <out of memory range>',-1)
+
+        out = "%5d: " % loc
+        opcode = instruction % 100
+        offset = 1
+
+        try:
+            op = instruction_set[opcode]
+        except KeyError:
+            out += '????   '+str(instruction)
+            return (out,offset)
+
+        nargs = op.__doc__.count('%s')
+        inargs = len(getargspec(op).args)-1
+
+        pos = 100
+        args = []
+        while offset <= inargs:
+            mode = (instruction / pos) % 10
+            v = self.mem[loc + offset]
+            args.append(Machine.mode_desc[mode] % v)
+            pos *= 10
+            offset += 1
+
+        if nargs > inargs:
+            # instruction is a memory store
+            v = self.mem[loc + offset]
+            args.append(Machine.mode_desc[0] % v)
+            offset += 1
+
+        out += op.__doc__ % tuple(args)
+
+        return (out,offset)
+
+    def disassemble(self, loc = 0, numinst = -1):
+        """
+        Dissassemble numinst instructions starting at loc.
+        Pass numinst = -1 to disassemble until memory ends.
         """
         while numinst != 0:
-            out = "%5d: " % loc
-            try:
-                opcode = self.mem[loc]
-            except IndexError:
-                print '       <end of memory>'
-                return
-
-            loc += 1
-            numinst -= 1
-            try:
-                doc = _instruction_set[opcode].__doc__
-                nargs = doc.count('%d')
-                args = self.mem[loc:loc+nargs]
-                out += doc % tuple(args)
-                loc += nargs
-            except (KeyError,TypeError):
-                out += '????   '+str(opcode)
+            (out, offset) = self._disone(loc)
             print out
+            if offset < 0:
+                return
+            loc += offset
+            numinst -= 1
 
-    def dump(self, start, end):
+    def dump(self, start = 0, end = None):
         """Memory dump from start address to end address."""
+        if end == None:
+            end = len(self.mem)
         print ("%5d:" % start),
         m = start
         while m < end:
@@ -300,6 +347,81 @@ class Machine:
                 print
                 print ("%5d:" % m),
         print
+
+    @opcode(1)
+    def _add(self,v1,v2):
+        """add %s + %s -> %s"""
+        self.ip += 4
+        return v1+v2
+
+    @opcode(2)
+    def _mul(self,v1,v2):
+        """mul %s + %s -> %s"""
+        self.ip += 4
+        return v1*v2
+
+    class EInput(Exception):
+        """Input would block."""
+        pass
+
+    @opcode(3)
+    def _input(self,v1):
+        """input %s"""
+        try:
+            val = self.input.pop(0)
+        except IndexError:
+            raise EInput
+        self.ip += 2
+        return val
+
+    class EOutput(Exception):
+        """Output would block."""
+        pass
+
+    @opcode(4)
+    def _output(self,v1):
+        """output %s"""
+        self.output.append(v1)
+        self.ip += 2
+        self.steps += 1 # exception will skip the step counting
+        raise EOutput
+
+    @opcode(5)
+    def _jmpt(self,v1,v2):
+        """jmpt if %s goto %s"""
+        if v1:
+            self.ip = v2
+        else:
+            self.ip += 3
+
+    @opcode(6)
+    def _jmpf(self,v1,v2):
+        """jmpt if not %s goto %s"""
+        if not v1:
+            self.ip = v2
+        else:
+            self.ip += 3
+
+    @opcode(7)
+    def _lt(self,v1,v2):
+        """lt %s < %s -> %s"""
+        self.ip += 4
+        return 1 if v1 < v2 else 0
+
+    @opcode(8)
+    def _eq(self,v1,v2):
+        """eq %s == %s -> %s"""
+        self.ip += 4
+        return 1 if v1 == v2 else 0
+
+    class EQuit(Exception):
+        """Intcode machine terminated."""
+        pass
+
+    @opcode(99)
+    def _quit(self):
+        """quit"""
+        raise EQuit
 
 if __name__ == "__main__":
     print '==========='
@@ -313,10 +435,13 @@ if __name__ == "__main__":
             ],debug = True)
 
     print 'Memory state:'
-    machine.dump(0,12)
+    machine.dump()
+
+    print 'Data:'
+    machine.dump(9,12)
 
     print 'Disassembly:'
-    machine.disassemble(0,10)
+    machine.disassemble()
 
     print 'Running...'
     steps = machine.runq()
@@ -335,7 +460,7 @@ if __name__ == "__main__":
     machine.mem[1] = 12
     machine.mem[2] = 2
     print 'Disassembly:'
-    machine.disassemble(0,-1)
+    machine.disassemble()
 
     print 'Running...'
     steps = machine.runq()
@@ -372,8 +497,10 @@ if __name__ == "__main__":
     for i in range(len(inputs)):
         machine = Machine("day5/test4.txt",input=[inputs[i]])
         if i == 0:
-            machine.disassemble(0,1000)
+            machine.disassemble()
+        print '    Running on input',inputs[i],
         machine.runq()
+        print 'got',machine.output
         assert(machine.output == [outputs[i]])
     print '    PASSED'
 
