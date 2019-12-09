@@ -12,7 +12,7 @@ class EOutput(Exception):
     pass
 
 class EHalt(Exception):
-    """Intcode machine halt."""
+    """Machine halted."""
     pass
 
 class EFault(Exception):
@@ -108,7 +108,8 @@ class Machine:
 
     def runq(self):
         """
-        Run until machine halts, not blocking for output.
+        Run until machine halts, not blocking.
+        Returns output as a list.
         This is how programs ran before Day 7.
         """
         while True:
@@ -117,7 +118,7 @@ class Machine:
             except EOutput:
                 pass
             except EHalt:
-                return
+                return self.output
 
     # Memory Management
 
@@ -357,9 +358,9 @@ if __name__ == "__main__":
     print '==========='
     print 'test 1'
     machine = Machine("day5/test1.txt",input=[1],debug=True)
-    machine.runq()
-    print '    output:',machine.output
-    assert(machine.output == [1])
+    out = machine.runq()
+    print '    output:',out
+    assert(out == [1])
 
     print 'test 2'
     machine = Machine("day5/test2.txt",debug=True)
@@ -369,8 +370,8 @@ if __name__ == "__main__":
     print 'test 3'
     for x in [0,1]:
         machine = Machine("day5/test3.txt",input=[x], debug=True)
-        machine.runq()
-        assert(machine.output == [x])
+        out = machine.runq()
+        assert(out == [x])
     print '    PASSED'
 
     print 'test 4'
@@ -382,16 +383,16 @@ if __name__ == "__main__":
         if i == 0:
             machine.disassemble()
         print '    Running on input',inputs[i],
-        machine.runq()
-        print 'got',machine.output
-        assert(machine.output == [outputs[i]])
+        out = machine.runq()
+        print 'got',out
+        assert(out == [outputs[i]])
     print '    PASSED'
 
     print 'Part 2 answer:'
     machine = Machine("day5/input.txt",input=[5])
-    machine.runq()
-    print '    Diagnostic code:',machine.output[0]
-    assert(machine.output == [15724522])
+    out = machine.runq()
+    print '    Diagnostic code:',out[0]
+    assert(out == [15724522])
 
     print '==========='
     print ' aoc day 7 '
@@ -418,36 +419,35 @@ if __name__ == "__main__":
     quine = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
     m = Machine(quine + [0]*100)
     m.disassemble(numinst = 6)
-    m.runq()
-    assert(m.output == quine)
+    out = m.runq()
+    assert(out == quine)
     print '    PASSED'
 
     print
     m = Machine([1102,34915192,34915192,7,4,7,99,0])
     m.disassemble()
-    m.runq()
-    assert(m.output == [1219070632396864])
+    out = m.runq()
+    assert(out == [1219070632396864])
     print '    PASSED'
 
     print
     m = Machine([104,1125899906842624,99])
     m.disassemble()
-    m.runq()
-    assert(m.output == [1125899906842624])
+    out = m.runq()
+    assert(out == [1125899906842624])
     print '    PASSED'
 
     print 'Part 1:'
     m = Machine("day9/input.txt",[1])
     m.memory.extend([0]*1000)
-    m.runq()
-    print '   ',m.output[0]
-    assert(m.output == [2775723069])
+    out = m.runq()
+    print '   ',out[0]
+    assert(out == [2775723069])
     print 'Part 2:'
     m = Machine("day9/input.txt",[2])
     m.memory.extend([0]*1000)
-    m.runq()
-    print '   ',m.output[0]
-    assert(m.output == [49115])
-
+    out = m.runq()
+    print '   ',out[0]
+    assert(out == [49115])
 
     
