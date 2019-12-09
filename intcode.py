@@ -9,217 +9,17 @@ def opcode(code):
         instruction_set[code] = (func)
     return add_to_set
 
-
-_instruction_set = {}
-def instruction(code):
-    def add_to_set(func):
-        _instruction_set[code] = func
-    return add_to_set
-
-@instruction(1)
-def _addppp(m):
-    """addppp (%d)+(%d)->(%d)"""
-    m[m[m.ip+3]] = m[m[m.ip+1]] + m[m[m.ip+2]]
-    m.ip += 4 
-
-@instruction(101)
-def _addipp(m):
-    """addipp #%d+(%d)->(%d)"""
-    m[m[m.ip+3]] = m[m.ip+1] + m[m[m.ip+2]]
-    m.ip += 4 
-
-@instruction(1001)
-def _addpip(m):
-    """addpip (%d)+#%d->(%d)"""
-    m[m[m.ip+3]] = m[m[m.ip+1]] + m[m.ip+2]
-    m.ip += 4 
-
-@instruction(1101)
-def _addiip(m):
-    """addiip #%d+#%d->(%d)"""
-    m[m[m.ip+3]] = m[m.ip+1] + m[m.ip+2]
-    m.ip += 4 
-
-@instruction(2)
-def _mulppp(m):
-    """mulppp (%d)+(%d)->(%d)"""
-    m[m[m.ip+3]] = m[m[m.ip+1]] * m[m[m.ip+2]]
-    m.ip += 4 
-
-@instruction(102)
-def _mulipp(m):
-    """mulipp #%d+(%d)->(%d)"""
-    m[m[m.ip+3]] = m[m.ip+1] * m[m[m.ip+2]]
-    m.ip += 4 
-
-@instruction(1002)
-def _mulpip(m):
-    """mulpip (%d)+#%d->(%d)"""
-    m[m[m.ip+3]] = m[m[m.ip+1]] * m[m.ip+2]
-    m.ip += 4 
-
-@instruction(1102)
-def _muliip(m):
-    """muliip #%d+#%d->(%d)"""
-    m[m[m.ip+3]] = m[m.ip+1] * m[m.ip+2]
-    m.ip += 4 
-
-@instruction(7)
-def _lthppp(m):
-    """lthppp (%d)+(%d)->(%d)"""
-    m[m[m.ip+3]] = 1 if m[m[m.ip+1]] < m[m[m.ip+2]] else 0
-    m.ip += 4 
-
-@instruction(107)
-def _lthipp(m):
-    """lthipp #%d+(%d)->(%d)"""
-    m[m[m.ip+3]] = 1 if m[m.ip+1] < m[m[m.ip+2]] else 0
-    m.ip += 4 
-
-@instruction(1007)
-def _lthpip(m):
-    """lthpip (%d)+#%d->(%d)"""
-    m[m[m.ip+3]] = 1 if m[m[m.ip+1]] < m[m.ip+2] else 0
-    m.ip += 4 
-
-@instruction(1107)
-def _lthiip(m):
-    """lthiip #%d+#%d->(%d)"""
-    m[m[m.ip+3]] = 1 if m[m.ip+1] < m[m.ip+2] else 0
-    m.ip += 4 
-
-@instruction(8)
-def _equppp(m):
-    """equppp (%d)+(%d)->(%d)"""
-    m[m[m.ip+3]] = 1 if m[m[m.ip+1]] == m[m[m.ip+2]] else 0
-    m.ip += 4 
-
-@instruction(108)
-def _equipp(m):
-    """equipp #%d+(%d)->(%d)"""
-    m[m[m.ip+3]] = 1 if m[m.ip+1] == m[m[m.ip+2]] else 0
-    m.ip += 4 
-
-@instruction(1008)
-def _equpip(m):
-    """equpip (%d)+#%d->(%d)"""
-    m[m[m.ip+3]] = 1 if m[m[m.ip+1]] == m[m.ip+2] else 0
-    m.ip += 4 
-
-@instruction(1108)
-def _equiip(m):
-    """equiip #%d+#%d->(%d)"""
-    m[m[m.ip+3]] = 1 if m[m.ip+1] == m[m.ip+2] else 0
-    m.ip += 4 
-
-@instruction(5)
-def _jmptpp(m):
-    """jmptpp if (%d) goto (%d)"""
-    if m[m[m.ip+1]] != 0:
-        m.ip = m[m[m.ip+2]]
-    else:
-        m.ip += 3
-
-@instruction(105)
-def _jmptip(m):
-    """jmptip if #%d goto (%d)"""
-    if m[m.ip+1] != 0:
-        m.ip = m[m[m.ip+2]]
-    else:
-        m.ip += 3
-
-@instruction(1005)
-def _jmptpi(m):
-    """jmptpi if (%d) goto #%d"""
-    if m[m[m.ip+1]] != 0:
-        m.ip = m[m.ip+2]
-    else:
-        m.ip += 3
-
-@instruction(1105)
-def _jmptii(m):
-    """jmptii if #%d goto #%d"""
-    if m[m.ip+1] != 0:
-        m.ip = m[m.ip+2]
-    else:
-        m.ip += 3
-
-@instruction(6)
-def _jmpfpp(m):
-    """jmpfpp if (%d) goto (%d)"""
-    if m[m[m.ip+1]] == 0:
-        m.ip = m[m[m.ip+2]]
-    else:
-        m.ip += 3
-
-@instruction(106)
-def _jmpfip(m):
-    """jmpfip if #%d goto (%d)"""
-    if m[m.ip+1] == 0:
-        m.ip = m[m[m.ip+2]]
-    else:
-        m.ip += 3
-
-@instruction(1006)
-def _jmpfpi(m):
-    """jmpfpi if (%d) goto #%d"""
-    if m[m[m.ip+1]] == 0:
-        m.ip = m[m.ip+2]
-    else:
-        m.ip += 3
-
-@instruction(1106)
-def _jmpfii(m):
-    """jmpfii if #%d goto #%d"""
-    if m[m.ip+1] == 0:
-        m.ip = m[m.ip+2]
-    else:
-        m.ip += 3
-
 class EInput(Exception):
-    """Input would block."""
+    """Input blocked."""
     pass
-
-@instruction(3)
-def _inputp(m):
-    """inputp (%d)"""
-    try:
-        val = m.input.pop(0)
-    except IndexError:
-        raise EInput
-    m[m[m.ip+1]] = val
-    m.ip += 2
 
 class EOutput(Exception):
-    """Output would block."""
+    """Output available."""
     pass
 
-@instruction(4)
-def _outptp(m):
-    """outptp (%d)"""
-    val = m[m[m.ip+1]]
-    m.output.append(val)
-    m.ip += 2
-    m.steps += 1 # exception will skip the step counting
-    raise EOutput
-
-@instruction(104)
-def _outpti(m):
-    """outpti #%d"""
-    val = m[m.ip+1]
-    m.output.append(val)
-    m.ip += 2
-    m.steps += 1 # exception will skip the step counting
-    raise EOutput
-
-class EQuit(Exception):
-    """Intcode machine terminated."""
+class EHalt(Exception):
+    """Intcode machine halt."""
     pass
-
-@instruction(99)
-def _mquit(m):
-    """quit"""
-    raise EQuit
 
 class EFault(Exception):
     """Execution fault."""
@@ -311,13 +111,13 @@ class Machine:
         # op(self)
 
     def run(self):
-        """Run until an exception (EQuit, EInput, EOutput)"""
+        """Run.  Only escapes via exceptions."""
         while True:
             self.step()
 
     def runq(self):
         """
-        Run until quit, not blocking for output.
+        Run until machine halts, not blocking for output.
         This is how programs ran before Day 7.
         """
         while True:
@@ -325,7 +125,7 @@ class Machine:
                 self.step()
             except EOutput:
                 pass
-            except EQuit:
+            except EHalt:
                 return
 
     # Memory Management
@@ -471,9 +271,9 @@ class Machine:
         return 1 if v1 == v2 else 0
 
     @opcode(99)
-    def _quit(self):
-        """quit"""
-        raise EQuit
+    def _halt(self):
+        """halt"""
+        raise EHalt
 
 if __name__ == "__main__":
     print '==========='
@@ -579,7 +379,7 @@ if __name__ == "__main__":
             amps[a].run()
         except EOutput:
             signal = amps[a].output.pop()
-        except EQuit:
+        except EHalt:
             break
         a = (a + 1) % 5
     print 'Thrust using feedback loop (part 2):',signal
