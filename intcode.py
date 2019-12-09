@@ -19,160 +19,160 @@ def instruction(code):
 @instruction(1)
 def _addppp(m):
     """addppp (%d)+(%d)->(%d)"""
-    m.mem[m.mem[m.ip+3]] = m.mem[m.mem[m.ip+1]] + m.mem[m.mem[m.ip+2]]
+    m[m[m.ip+3]] = m[m[m.ip+1]] + m[m[m.ip+2]]
     m.ip += 4 
 
 @instruction(101)
 def _addipp(m):
     """addipp #%d+(%d)->(%d)"""
-    m.mem[m.mem[m.ip+3]] = m.mem[m.ip+1] + m.mem[m.mem[m.ip+2]]
+    m[m[m.ip+3]] = m[m.ip+1] + m[m[m.ip+2]]
     m.ip += 4 
 
 @instruction(1001)
 def _addpip(m):
     """addpip (%d)+#%d->(%d)"""
-    m.mem[m.mem[m.ip+3]] = m.mem[m.mem[m.ip+1]] + m.mem[m.ip+2]
+    m[m[m.ip+3]] = m[m[m.ip+1]] + m[m.ip+2]
     m.ip += 4 
 
 @instruction(1101)
 def _addiip(m):
     """addiip #%d+#%d->(%d)"""
-    m.mem[m.mem[m.ip+3]] = m.mem[m.ip+1] + m.mem[m.ip+2]
+    m[m[m.ip+3]] = m[m.ip+1] + m[m.ip+2]
     m.ip += 4 
 
 @instruction(2)
 def _mulppp(m):
     """mulppp (%d)+(%d)->(%d)"""
-    m.mem[m.mem[m.ip+3]] = m.mem[m.mem[m.ip+1]] * m.mem[m.mem[m.ip+2]]
+    m[m[m.ip+3]] = m[m[m.ip+1]] * m[m[m.ip+2]]
     m.ip += 4 
 
 @instruction(102)
 def _mulipp(m):
     """mulipp #%d+(%d)->(%d)"""
-    m.mem[m.mem[m.ip+3]] = m.mem[m.ip+1] * m.mem[m.mem[m.ip+2]]
+    m[m[m.ip+3]] = m[m.ip+1] * m[m[m.ip+2]]
     m.ip += 4 
 
 @instruction(1002)
 def _mulpip(m):
     """mulpip (%d)+#%d->(%d)"""
-    m.mem[m.mem[m.ip+3]] = m.mem[m.mem[m.ip+1]] * m.mem[m.ip+2]
+    m[m[m.ip+3]] = m[m[m.ip+1]] * m[m.ip+2]
     m.ip += 4 
 
 @instruction(1102)
 def _muliip(m):
     """muliip #%d+#%d->(%d)"""
-    m.mem[m.mem[m.ip+3]] = m.mem[m.ip+1] * m.mem[m.ip+2]
+    m[m[m.ip+3]] = m[m.ip+1] * m[m.ip+2]
     m.ip += 4 
 
 @instruction(7)
 def _lthppp(m):
     """lthppp (%d)+(%d)->(%d)"""
-    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.mem[m.ip+1]] < m.mem[m.mem[m.ip+2]] else 0
+    m[m[m.ip+3]] = 1 if m[m[m.ip+1]] < m[m[m.ip+2]] else 0
     m.ip += 4 
 
 @instruction(107)
 def _lthipp(m):
     """lthipp #%d+(%d)->(%d)"""
-    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.ip+1] < m.mem[m.mem[m.ip+2]] else 0
+    m[m[m.ip+3]] = 1 if m[m.ip+1] < m[m[m.ip+2]] else 0
     m.ip += 4 
 
 @instruction(1007)
 def _lthpip(m):
     """lthpip (%d)+#%d->(%d)"""
-    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.mem[m.ip+1]] < m.mem[m.ip+2] else 0
+    m[m[m.ip+3]] = 1 if m[m[m.ip+1]] < m[m.ip+2] else 0
     m.ip += 4 
 
 @instruction(1107)
 def _lthiip(m):
     """lthiip #%d+#%d->(%d)"""
-    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.ip+1] < m.mem[m.ip+2] else 0
+    m[m[m.ip+3]] = 1 if m[m.ip+1] < m[m.ip+2] else 0
     m.ip += 4 
 
 @instruction(8)
 def _equppp(m):
     """equppp (%d)+(%d)->(%d)"""
-    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.mem[m.ip+1]] == m.mem[m.mem[m.ip+2]] else 0
+    m[m[m.ip+3]] = 1 if m[m[m.ip+1]] == m[m[m.ip+2]] else 0
     m.ip += 4 
 
 @instruction(108)
 def _equipp(m):
     """equipp #%d+(%d)->(%d)"""
-    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.ip+1] == m.mem[m.mem[m.ip+2]] else 0
+    m[m[m.ip+3]] = 1 if m[m.ip+1] == m[m[m.ip+2]] else 0
     m.ip += 4 
 
 @instruction(1008)
 def _equpip(m):
     """equpip (%d)+#%d->(%d)"""
-    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.mem[m.ip+1]] == m.mem[m.ip+2] else 0
+    m[m[m.ip+3]] = 1 if m[m[m.ip+1]] == m[m.ip+2] else 0
     m.ip += 4 
 
 @instruction(1108)
 def _equiip(m):
     """equiip #%d+#%d->(%d)"""
-    m.mem[m.mem[m.ip+3]] = 1 if m.mem[m.ip+1] == m.mem[m.ip+2] else 0
+    m[m[m.ip+3]] = 1 if m[m.ip+1] == m[m.ip+2] else 0
     m.ip += 4 
 
 @instruction(5)
 def _jmptpp(m):
     """jmptpp if (%d) goto (%d)"""
-    if m.mem[m.mem[m.ip+1]] != 0:
-        m.ip = m.mem[m.mem[m.ip+2]]
+    if m[m[m.ip+1]] != 0:
+        m.ip = m[m[m.ip+2]]
     else:
         m.ip += 3
 
 @instruction(105)
 def _jmptip(m):
     """jmptip if #%d goto (%d)"""
-    if m.mem[m.ip+1] != 0:
-        m.ip = m.mem[m.mem[m.ip+2]]
+    if m[m.ip+1] != 0:
+        m.ip = m[m[m.ip+2]]
     else:
         m.ip += 3
 
 @instruction(1005)
 def _jmptpi(m):
     """jmptpi if (%d) goto #%d"""
-    if m.mem[m.mem[m.ip+1]] != 0:
-        m.ip = m.mem[m.ip+2]
+    if m[m[m.ip+1]] != 0:
+        m.ip = m[m.ip+2]
     else:
         m.ip += 3
 
 @instruction(1105)
 def _jmptii(m):
     """jmptii if #%d goto #%d"""
-    if m.mem[m.ip+1] != 0:
-        m.ip = m.mem[m.ip+2]
+    if m[m.ip+1] != 0:
+        m.ip = m[m.ip+2]
     else:
         m.ip += 3
 
 @instruction(6)
 def _jmpfpp(m):
     """jmpfpp if (%d) goto (%d)"""
-    if m.mem[m.mem[m.ip+1]] == 0:
-        m.ip = m.mem[m.mem[m.ip+2]]
+    if m[m[m.ip+1]] == 0:
+        m.ip = m[m[m.ip+2]]
     else:
         m.ip += 3
 
 @instruction(106)
 def _jmpfip(m):
     """jmpfip if #%d goto (%d)"""
-    if m.mem[m.ip+1] == 0:
-        m.ip = m.mem[m.mem[m.ip+2]]
+    if m[m.ip+1] == 0:
+        m.ip = m[m[m.ip+2]]
     else:
         m.ip += 3
 
 @instruction(1006)
 def _jmpfpi(m):
     """jmpfpi if (%d) goto #%d"""
-    if m.mem[m.mem[m.ip+1]] == 0:
-        m.ip = m.mem[m.ip+2]
+    if m[m[m.ip+1]] == 0:
+        m.ip = m[m.ip+2]
     else:
         m.ip += 3
 
 @instruction(1106)
 def _jmpfii(m):
     """jmpfii if #%d goto #%d"""
-    if m.mem[m.ip+1] == 0:
-        m.ip = m.mem[m.ip+2]
+    if m[m.ip+1] == 0:
+        m.ip = m[m.ip+2]
     else:
         m.ip += 3
 
@@ -187,7 +187,7 @@ def _inputp(m):
         val = m.input.pop(0)
     except IndexError:
         raise EInput
-    m.mem[m.mem[m.ip+1]] = val
+    m[m[m.ip+1]] = val
     m.ip += 2
 
 class EOutput(Exception):
@@ -197,7 +197,7 @@ class EOutput(Exception):
 @instruction(4)
 def _outptp(m):
     """outptp (%d)"""
-    val = m.mem[m.mem[m.ip+1]]
+    val = m[m[m.ip+1]]
     m.output.append(val)
     m.ip += 2
     m.steps += 1 # exception will skip the step counting
@@ -206,7 +206,7 @@ def _outptp(m):
 @instruction(104)
 def _outpti(m):
     """outpti #%d"""
-    val = m.mem[m.ip+1]
+    val = m[m.ip+1]
     m.output.append(val)
     m.ip += 2
     m.steps += 1 # exception will skip the step counting
@@ -222,37 +222,40 @@ def _mquit(m):
     raise EQuit
 
 class Machine:
-    def __init__(self,mem,input=[],ip=0,debug=False):
+    def __init__(self,mem,input=[],debug=False):
         """
         mem : a filename containing a comma-separated memory image
               OR
               an array of intcode integers, will be copied locally
-        ip  : initial instruction pointer.
         input : an array of values to pass as input
         debug : when true, all instructions print output.
         """
         if isinstance(mem,str):
             with open(mem, 'r') as memfile:
                 content = memfile.read()
-            self.mem = [int(x) for x in content.split(',')]
+            self.memory = [int(x) for x in content.split(',')]
         else:
-            self.mem = list(mem)
+            self.memory = list(mem)
 
-        self.ip = ip
         self.input = input
         self.output = []
+
         self.debug = debug
-        self.steps = 0
+
+        self.ip = 0
+
+        self.steps = 0 # counts the total number of instructions executed
+
+    # Execution Routines
 
     def step(self):
         """Execute the instruction at the current ip."""
         if self.debug:
             out, offset = self._disone(self.ip)
             print out
-
-        op = _instruction_set[self.mem[self.ip]]
-        op(self)
         self.steps += 1
+        op = _instruction_set[self[self.ip]]
+        op(self)
 
     def run(self):
         """Run until an exception (EQuit, EInput, EOutput)"""
@@ -273,23 +276,38 @@ class Machine:
             except EOutput:
                 pass
 
+    # Memory Management
+
+    def __getitem__(self, address):
+        """Read value at address"""
+        return self.memory[address]
+
+    def __setitem__(self, address, value):
+        """Store value at address"""
+        self.memory[address] = value
+
+    # Disassembly Routines
+
     mode_desc = {
         0 : '(%d)',
         1 : '#%d',
         2 : '(%d+b)'
         }
 
-    def _disone(self, loc):
+    def _disone(self, addr):
         """
-        Disassemble the single instruction at loc.
-        Returns the disassembled string and how far to advance in memory.
+        Disassemble the single instruction at addr.
+        Returns a pair (out,offset)
+          out : the disassembled string
+          offset : how far to advance in memory
+                   (or -1 if addr is an illegal address)
         """
         try:
-            instruction = self.mem[loc]
+            instruction = self[addr]
         except IndexError:
             return('       <out of memory range>',-1)
 
-        out = "%5d: " % loc
+        out = "%5d: " % addr
         opcode = instruction % 100
         offset = 1
 
@@ -306,14 +324,14 @@ class Machine:
         args = []
         while offset <= inargs:
             mode = (instruction / pos) % 10
-            v = self.mem[loc + offset]
+            v = self[addr + offset]
             args.append(Machine.mode_desc[mode] % v)
             pos *= 10
             offset += 1
 
         if nargs > inargs:
             # instruction is a memory store
-            v = self.mem[loc + offset]
+            v = self[addr + offset]
             args.append(Machine.mode_desc[0] % v)
             offset += 1
 
@@ -321,32 +339,34 @@ class Machine:
 
         return (out,offset)
 
-    def disassemble(self, loc = 0, numinst = -1):
+    def disassemble(self, addr = 0, numinst = -1):
         """
-        Dissassemble numinst instructions starting at loc.
+        Dissassemble numinst instructions starting at addr.
         Pass numinst = -1 to disassemble until memory ends.
         """
         while numinst != 0:
-            (out, offset) = self._disone(loc)
+            (out, offset) = self._disone(addr)
             print out
             if offset < 0:
                 return
-            loc += offset
+            addr += offset
             numinst -= 1
 
     def dump(self, start = 0, end = None):
         """Memory dump from start address to end address."""
         if end == None:
-            end = len(self.mem)
+            end = len(self.memory)
         print ("%5d:" % start),
-        m = start
-        while m < end:
-            print ("%5d" % self.mem[m]),
-            m += 1
-            if (m % 10 == 0):
+        addr = start
+        while addr < end:
+            print ("%5d" % self[addr]),
+            addr += 1
+            if (addr % 10 == 0):
                 print
-                print ("%5d:" % m),
+                print ("%5d:" % addr),
         print
+
+    # Machine Instruction Set
 
     @opcode(1)
     def _add(self,v1,v2):
@@ -360,30 +380,24 @@ class Machine:
         self.ip += 4
         return v1*v2
 
-    class EInput(Exception):
-        """Input would block."""
-        pass
-
     @opcode(3)
     def _input(self,v1):
         """input %s"""
         try:
             val = self.input.pop(0)
         except IndexError:
+            # will need to restart this instruction, so don't count
+            # it as a step
+            self.steps -= 1
             raise EInput
         self.ip += 2
         return val
-
-    class EOutput(Exception):
-        """Output would block."""
-        pass
 
     @opcode(4)
     def _output(self,v1):
         """output %s"""
         self.output.append(v1)
         self.ip += 2
-        self.steps += 1 # exception will skip the step counting
         raise EOutput
 
     @opcode(5)
@@ -414,10 +428,6 @@ class Machine:
         self.ip += 4
         return 1 if v1 == v2 else 0
 
-    class EQuit(Exception):
-        """Intcode machine terminated."""
-        pass
-
     @opcode(99)
     def _quit(self):
         """quit"""
@@ -445,29 +455,29 @@ if __name__ == "__main__":
 
     print 'Running...'
     steps = machine.runq()
-    assert(steps == 2)
+    assert(steps == 3)
     print 'Done in %d steps' % steps
 
     print 'Memory state:'
     machine.dump(0,12)
-    assert(machine.mem[0] == 3500)
+    assert(machine[0] == 3500)
 
 
     print '==========='
     print ' aoc day 2 '
     print '==========='
     machine = Machine("day2/input.txt")
-    machine.mem[1] = 12
-    machine.mem[2] = 2
+    machine[1] = 12
+    machine[2] = 2
     print 'Disassembly:'
     machine.disassemble()
 
     print 'Running...'
     steps = machine.runq()
     print 'Done in %d steps' % steps
-    assert(steps == 36)
-    print 'Part 1 answer:',machine.mem[0]
-    assert(machine.mem[0] == 3058646)
+    assert(steps == 37)
+    print 'Part 1 answer:',machine[0]
+    assert(machine[0] == 3058646)
 
     print '==========='
     print ' aoc day 5 '
@@ -481,7 +491,7 @@ if __name__ == "__main__":
     print 'test 2'
     machine = Machine("day5/test2.txt",debug=True)
     machine.runq()
-    assert(machine.mem[4] == 99)
+    assert(machine[4] == 99)
 
     print 'test 3'
     for x in [0,1]:
