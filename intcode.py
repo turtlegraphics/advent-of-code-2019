@@ -221,6 +221,10 @@ def _mquit(m):
     """quit"""
     raise EQuit
 
+class EFault(Exception):
+    """Execution fault."""
+    pass
+
 class Machine:
     def __init__(self,mem,input=[],debug=False):
         """
@@ -243,8 +247,7 @@ class Machine:
         self.debug = debug
 
         self.ip = 0
-
-        self.steps = 0 # counts the total number of instructions executed
+        self.base = 0
 
     # Execution Routines
 
@@ -253,9 +256,59 @@ class Machine:
         if self.debug:
             out, offset = self._disone(self.ip)
             print out
-        self.steps += 1
-        op = _instruction_set[self[self.ip]]
-        op(self)
+
+        instruction = self[self.ip]
+        self.ip += 1
+
+        offset = 1
+        opcode = instruction % 100
+        try:
+            operation = instruction_set[opcode]
+        except KeyError:
+            raise EFault('Illegal opcode: %d' % opcode)
+
+        inargs = len(getargspec(operation).args)-1
+
+        # decode instruction's input arguments
+        pos = 100
+        args = []
+        while inargs:
+            mode = (instruction / pos) % 10
+            param = self[self.ip]
+            self.ip += 1
+
+            if mode == 0:
+                val = self[param]
+            elif mode == 1:
+                val = param
+            elif mode == 2:
+                val = self[param + self.base]
+            else:
+                raise EFault("Bad mode in instruction %d" % instruction)
+            args.append(val)
+            pos *= 10
+            inargs -= 1
+
+        # execute operation
+        result = operation(self,*args)
+
+        # store return value (if any)
+        if result != None:
+            mode = (instruction / pos) % 10
+            param = self[self.ip]
+            self.ip += 1
+
+            if mode == 0:
+                self[param] = result
+            elif mode == 1:
+                raise EFault("Immediate mode illegal for store.")
+            elif mode == 2:
+                self[param + self.base] = result
+            else:
+                raise EFault("Bad mode in instruction %d" % instruction)
+
+        # op = _instruction_set[self[self.ip]]
+        # op(self)
 
     def run(self):
         """Run until an exception (EQuit, EInput, EOutput)"""
@@ -265,16 +318,15 @@ class Machine:
     def runq(self):
         """
         Run until quit, not blocking for output.
-        Returns number of steps.
         This is how programs ran before Day 7.
         """
         while True:
             try:
                 self.step()
-            except EQuit:
-                return self.steps
             except EOutput:
                 pass
+            except EQuit:
+                return
 
     # Memory Management
 
@@ -371,33 +423,29 @@ class Machine:
     @opcode(1)
     def _add(self,v1,v2):
         """add %s + %s -> %s"""
-        self.ip += 4
         return v1+v2
 
     @opcode(2)
     def _mul(self,v1,v2):
         """mul %s + %s -> %s"""
-        self.ip += 4
         return v1*v2
 
     @opcode(3)
-    def _input(self,v1):
+    def _input(self):
         """input %s"""
         try:
             val = self.input.pop(0)
+            return val
         except IndexError:
-            # will need to restart this instruction, so don't count
-            # it as a step
-            self.steps -= 1
+            # will need to restart this instruction, so back up
+            print 'backup!'
+            self.ip -= 1
             raise EInput
-        self.ip += 2
-        return val
 
     @opcode(4)
     def _output(self,v1):
         """output %s"""
         self.output.append(v1)
-        self.ip += 2
         raise EOutput
 
     @opcode(5)
@@ -405,27 +453,21 @@ class Machine:
         """jmpt if %s goto %s"""
         if v1:
             self.ip = v2
-        else:
-            self.ip += 3
 
     @opcode(6)
     def _jmpf(self,v1,v2):
         """jmpt if not %s goto %s"""
         if not v1:
             self.ip = v2
-        else:
-            self.ip += 3
 
     @opcode(7)
     def _lt(self,v1,v2):
         """lt %s < %s -> %s"""
-        self.ip += 4
         return 1 if v1 < v2 else 0
 
     @opcode(8)
     def _eq(self,v1,v2):
         """eq %s == %s -> %s"""
-        self.ip += 4
         return 1 if v1 == v2 else 0
 
     @opcode(99)
@@ -454,14 +496,21 @@ if __name__ == "__main__":
     machine.disassemble()
 
     print 'Running...'
-    steps = machine.runq()
-    assert(steps == 3)
-    print 'Done in %d steps' % steps
+    machine.runq()
 
     print 'Memory state:'
     machine.dump(0,12)
     assert(machine[0] == 3500)
 
+    print '==========='
+    print ' Faults    '
+    print '==========='
+    machine = Machine([80],debug=True)
+    try:
+        machine.run()
+        assert(False)
+    except EFault as err:
+        print err
 
     print '==========='
     print ' aoc day 2 '
@@ -473,9 +522,7 @@ if __name__ == "__main__":
     machine.disassemble()
 
     print 'Running...'
-    steps = machine.runq()
-    print 'Done in %d steps' % steps
-    assert(steps == 37)
+    machine.runq()
     print 'Part 1 answer:',machine[0]
     assert(machine[0] == 3058646)
 
@@ -495,7 +542,7 @@ if __name__ == "__main__":
 
     print 'test 3'
     for x in [0,1]:
-        machine = Machine("day5/test3.txt",input=[x])
+        machine = Machine("day5/test3.txt",input=[x], debug=True)
         machine.runq()
         assert(machine.output == [x])
     print '    PASSED'
@@ -518,7 +565,6 @@ if __name__ == "__main__":
     machine = Machine("day5/input.txt",input=[5])
     machine.runq()
     print '    Diagnostic code:',machine.output[0]
-    assert(machine.steps == 113)
     assert(machine.output == [15724522])
 
     print '==========='
