@@ -132,11 +132,18 @@ class Machine:
 
     def __getitem__(self, address):
         """Read value at address"""
-        return self.memory[address]
+        try:
+            val = self.memory[address]
+        except IndexError:
+            raise EFault('Bad address: %d' % address)
+        return val
 
     def __setitem__(self, address, value):
         """Store value at address"""
-        self.memory[address] = value
+        try:
+            self.memory[address] = value
+        except IndexError:
+            raise EFault('Bad address: %d' % address)
 
     # Disassembly Routines
 
@@ -156,18 +163,18 @@ class Machine:
         """
         try:
             instruction = self[addr]
-        except IndexError:
+        except EFault:
             return('       <out of memory range>',-1)
 
-        out = "%5d: " % addr
+        head = '%5d: ' % addr
+        out = ''
         opcode = instruction % 100
         offset = 1
 
         try:
             op = instruction_set[opcode]
         except KeyError:
-            out += '????   '+str(instruction)
-            return (out,offset)
+            return (head + '????   ' + str(instruction), 1)
 
         nargs = op.__doc__.count('%s')
         inargs = len(getargspec(op).args)-1
@@ -177,17 +184,26 @@ class Machine:
         while offset <= inargs:
             mode = (instruction / pos) % 10
             v = self[addr + offset]
-            args.append(Machine.mode_desc[mode] % v)
+            try:
+                args.append(Machine.mode_desc[mode] % v)
+            except KeyError:
+                return (head + '????   ' + str(instruction), 1)
+                
             pos *= 10
             offset += 1
 
         if nargs > inargs:
             # instruction is a memory store
+            mode = (instruction / pos) % 10
             v = self[addr + offset]
-            args.append(Machine.mode_desc[0] % v)
+            try:
+                args.append(Machine.mode_desc[mode] % v)
+            except KeyError:
+                return (head + '????   ' + str(instruction), 1)
+
             offset += 1
 
-        out += op.__doc__ % tuple(args)
+        out = head + op.__doc__ % tuple(args)
 
         return (out,offset)
 
@@ -270,6 +286,11 @@ class Machine:
         """eq %s == %s -> %s"""
         return 1 if v1 == v2 else 0
 
+    @opcode(9)
+    def _base(self,v1):
+        """base += %s"""
+        self.base += v1
+
     @opcode(99)
     def _halt(self):
         """halt"""
@@ -305,12 +326,21 @@ if __name__ == "__main__":
     print '==========='
     print ' Faults    '
     print '==========='
-    machine = Machine([80],debug=True)
-    try:
-        machine.run()
-        assert(False)
-    except EFault as err:
-        print err
+    fault_tests = [
+        [],
+        [80],
+        [301,0,0,0],
+        [1,4,4,4],
+        [10001,2,2,2]
+        ]
+    for mem in fault_tests:
+        machine = Machine(mem,debug=True)
+        print 'running:',mem
+        try:
+            machine.run()
+            assert(False)
+        except EFault as err:
+            print '      ',err
 
     print '==========='
     print ' aoc day 2 '
@@ -385,3 +415,4 @@ if __name__ == "__main__":
     print 'Thrust using feedback loop (part 2):',signal
     assert(signal == 36384144)
     print '    PASSED'
+
