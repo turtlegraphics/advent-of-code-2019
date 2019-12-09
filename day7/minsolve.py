@@ -16,7 +16,7 @@ def amploop(phases):
             amps[a].run()
         except intcode.EOutput:
             signal = amps[a].output.pop()
-        except intcode.EQuit:
+        except intcode.EHalt:
             return signal
         a = (a + 1) % len(amps)
 
