@@ -214,9 +214,9 @@ class Machine:
         """
         while numinst != 0:
             (out, offset) = self._disone(addr)
-            print out
             if offset < 0:
                 return
+            print out
             addr += offset
             numinst -= 1
 
@@ -416,3 +416,26 @@ if __name__ == "__main__":
     assert(signal == 36384144)
     print '    PASSED'
 
+    print '==========='
+    print ' aoc day 9 '
+    print '==========='
+    quine = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
+    m = Machine(quine + [0]*100)
+    m.disassemble(numinst = 6)
+    m.runq()
+    assert(m.output == quine)
+    print '    PASSED'
+
+    print
+    m = Machine([1102,34915192,34915192,7,4,7,99,0])
+    m.disassemble()
+    m.runq()
+    assert(m.output == [1219070632396864])
+    print '    PASSED'
+
+    print
+    m = Machine([104,1125899906842624,99])
+    m.disassemble()
+    m.runq()
+    assert(m.output == [1125899906842624])
+    print '    PASSED'
