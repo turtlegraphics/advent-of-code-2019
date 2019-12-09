@@ -25,7 +25,7 @@ class Machine:
         mem : a filename containing a comma-separated memory image
               OR
               an array of intcode integers, will be copied locally
-        input : an array of values to pass as input
+        input : an array of values to pass as input, or a single integer input
         debug : when true, all instructions print output.
         """
         if isinstance(mem,str):
@@ -35,7 +35,11 @@ class Machine:
         else:
             self.memory = list(mem)
 
-        self.input = input
+        if isinstance(input, int):
+            self.input = [input]
+        else:
+            self.input = input
+
         self.output = []
 
         self.debug = debug
@@ -357,7 +361,7 @@ if __name__ == "__main__":
     print ' aoc day 5 '
     print '==========='
     print 'test 1'
-    machine = Machine("day5/test1.txt",input=[1],debug=True)
+    machine = Machine("day5/test1.txt",input=1,debug=True)
     out = machine.runq()
     print '    output:',out
     assert(out == [1])
@@ -369,7 +373,7 @@ if __name__ == "__main__":
 
     print 'test 3'
     for x in [0,1]:
-        machine = Machine("day5/test3.txt",input=[x], debug=True)
+        machine = Machine("day5/test3.txt",input=x,debug=True)
         out = machine.runq()
         assert(out == [x])
     print '    PASSED'
@@ -379,7 +383,7 @@ if __name__ == "__main__":
     inputs =  [  0,   1,   7,    8,    9, 1000]
     outputs = [999, 999, 999, 1000, 1001, 1001]
     for i in range(len(inputs)):
-        machine = Machine("day5/test4.txt",input=[inputs[i]])
+        machine = Machine("day5/test4.txt",input=inputs[i])
         if i == 0:
             machine.disassemble()
         print '    Running on input',inputs[i],
@@ -389,7 +393,7 @@ if __name__ == "__main__":
     print '    PASSED'
 
     print 'Part 2 answer:'
-    machine = Machine("day5/input.txt",input=[5])
+    machine = Machine("day5/input.txt",input=5)
     out = machine.runq()
     print '    Diagnostic code:',out[0]
     assert(out == [15724522])
@@ -397,7 +401,7 @@ if __name__ == "__main__":
     print '==========='
     print ' aoc day 7 '
     print '==========='
-    amps = [Machine("day7/input.txt",[p]) for p in [7,6,5,8,9]]
+    amps = [Machine("day7/input.txt",input=p) for p in [7,6,5,8,9]]
     a = 0
     signal = 0
     while True:
@@ -438,13 +442,13 @@ if __name__ == "__main__":
     print '    PASSED'
 
     print 'Part 1:'
-    m = Machine("day9/input.txt",[1])
+    m = Machine("day9/input.txt",input=1)
     m.memory.extend([0]*1000)
     out = m.runq()
     print '   ',out[0]
     assert(out == [2775723069])
     print 'Part 2:'
-    m = Machine("day9/input.txt",[2])
+    m = Machine("day9/input.txt",input=2)
     m.memory.extend([0]*1000)
     out = m.runq()
     print '   ',out[0]
