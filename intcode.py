@@ -290,7 +290,7 @@ def _equal(m,v1,v2):
 
 @_opcode(9)
 def _base(m,v1):
-    """BASE += %s"""
+    """b += %s"""
     m.base += v1
 
 @_opcode(99)
