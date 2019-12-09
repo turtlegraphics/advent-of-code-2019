@@ -435,3 +435,19 @@ if __name__ == "__main__":
     m.runq()
     assert(m.output == [1125899906842624])
     print '    PASSED'
+
+    print 'Part 1:'
+    m = Machine("day9/input.txt",[1])
+    m.memory.extend([0]*1000)
+    m.runq()
+    print '   ',m.output[0]
+    assert(m.output == [2775723069])
+    print 'Part 2:'
+    m = Machine("day9/input.txt",[2])
+    m.memory.extend([0]*1000)
+    m.runq()
+    print '   ',m.output[0]
+    assert(m.output == [49115])
+
+
+    
