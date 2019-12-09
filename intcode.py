@@ -3,12 +3,6 @@
 #
 from inspect import getargspec
 
-instruction_set = {}
-def opcode(code):
-    def add_to_set(func):
-        instruction_set[code] = (func)
-    return add_to_set
-
 class EInput(Exception):
     """Input blocked."""
     pass
@@ -63,7 +57,7 @@ class Machine:
         offset = 1
         opcode = instruction % 100
         try:
-            operation = instruction_set[opcode]
+            operation = _instruction_set[opcode]
         except KeyError:
             raise EFault('Illegal opcode: %d' % opcode)
 
@@ -107,9 +101,6 @@ class Machine:
             else:
                 raise EFault("Bad mode in instruction %d" % instruction)
 
-        # op = _instruction_set[self[self.ip]]
-        # op(self)
-
     def run(self):
         """Run.  Only escapes via exceptions."""
         while True:
@@ -146,13 +137,6 @@ class Machine:
             raise EFault('Bad address: %d' % address)
 
     # Disassembly Routines
-
-    mode_desc = {
-        0 : '(%d)',
-        1 : '#%d',
-        2 : '(%d+b)'
-        }
-
     def _disone(self, addr):
         """
         Disassemble the single instruction at addr.
@@ -172,7 +156,7 @@ class Machine:
         offset = 1
 
         try:
-            op = instruction_set[opcode]
+            op = _instruction_set[opcode]
         except KeyError:
             return (head + '????   ' + str(instruction), 1)
 
@@ -185,7 +169,7 @@ class Machine:
             mode = (instruction / pos) % 10
             v = self[addr + offset]
             try:
-                args.append(Machine.mode_desc[mode] % v)
+                args.append(_mode_syntax[mode] % v)
             except KeyError:
                 return (head + '????   ' + str(instruction), 1)
                 
@@ -197,13 +181,13 @@ class Machine:
             mode = (instruction / pos) % 10
             v = self[addr + offset]
             try:
-                args.append(Machine.mode_desc[mode] % v)
+                args.append(_mode_syntax[mode] % v)
             except KeyError:
                 return (head + '????   ' + str(instruction), 1)
 
             offset += 1
 
-        out = head + op.__doc__ % tuple(args)
+        out = head + op.__name__[1:].ljust(6) + ' ' + op.__doc__ % tuple(args)
 
         return (out,offset)
 
@@ -234,67 +218,79 @@ class Machine:
                 print ("%5d:" % addr),
         print
 
-    # Machine Instruction Set
+# Machine Instruction Set
 
-    @opcode(1)
-    def _add(self,v1,v2):
-        """add %s + %s -> %s"""
-        return v1+v2
+_mode_syntax = {
+    0 : '[%d]',
+    1 : '#%d',
+    2 : '[%d+b]'
+    }
 
-    @opcode(2)
-    def _mul(self,v1,v2):
-        """mul %s + %s -> %s"""
-        return v1*v2
+_instruction_set = {}
+def _opcode(code):
+    def add_to_set(func):
+        _instruction_set[code] = (func)
+    return add_to_set
 
-    @opcode(3)
-    def _input(self):
-        """input %s"""
-        try:
-            val = self.input.pop(0)
-            return val
-        except IndexError:
-            # will need to restart this instruction, so back up
-            print 'backup!'
-            self.ip -= 1
-            raise EInput
+@_opcode(1)
+def _add(m,v1,v2):
+    """%s + %s -> %s"""
+    return v1+v2
 
-    @opcode(4)
-    def _output(self,v1):
-        """output %s"""
-        self.output.append(v1)
-        raise EOutput
+@_opcode(2)
+def _mult(m,v1,v2):
+    """%s * %s -> %s"""
+    return v1*v2
 
-    @opcode(5)
-    def _jmpt(self,v1,v2):
-        """jmpt if %s goto %s"""
-        if v1:
-            self.ip = v2
+@_opcode(3)
+def _input(m):
+    """IN %s"""
+    try:
+        val = m.input.pop(0)
+        return val
+    except IndexError:
+        # will need to restart this instruction, so back up
+        print 'backup!'
+        m.ip -= 1
+        raise EInput
 
-    @opcode(6)
-    def _jmpf(self,v1,v2):
-        """jmpt if not %s goto %s"""
-        if not v1:
-            self.ip = v2
+@_opcode(4)
+def _output(m,v1):
+    """OUT %s"""
+    m.output.append(v1)
+    raise EOutput
 
-    @opcode(7)
-    def _lt(self,v1,v2):
-        """lt %s < %s -> %s"""
-        return 1 if v1 < v2 else 0
+@_opcode(5)
+def _jmp_t(m,v1,v2):
+    """if %s goto %s"""
+    if v1:
+        m.ip = v2
 
-    @opcode(8)
-    def _eq(self,v1,v2):
-        """eq %s == %s -> %s"""
-        return 1 if v1 == v2 else 0
+@_opcode(6)
+def _jmp_f(m,v1,v2):
+    """if not %s goto %s"""
+    if not v1:
+        m.ip = v2
 
-    @opcode(9)
-    def _base(self,v1):
-        """base += %s"""
-        self.base += v1
+@_opcode(7)
+def _less(m,v1,v2):
+    """(%s < %s) -> %s"""
+    return 1 if v1 < v2 else 0
 
-    @opcode(99)
-    def _halt(self):
-        """halt"""
-        raise EHalt
+@_opcode(8)
+def _equal(m,v1,v2):
+    """(%s == %s) -> %s"""
+    return 1 if v1 == v2 else 0
+
+@_opcode(9)
+def _base(m,v1):
+    """BASE += %s"""
+    m.base += v1
+
+@_opcode(99)
+def _halt(m):
+    """HALT"""
+    raise EHalt
 
 if __name__ == "__main__":
     print '==========='
