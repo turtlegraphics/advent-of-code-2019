@@ -518,6 +518,7 @@ if __name__ == "__main__":
     machine = Machine("day5/input.txt",input=[5])
     machine.runq()
     print '    Diagnostic code:',machine.output[0]
+    assert(machine.steps == 113)
     assert(machine.output == [15724522])
 
     print '==========='
