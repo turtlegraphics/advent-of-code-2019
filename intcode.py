@@ -49,12 +49,32 @@ class Machine:
 
     # Execution Routines
 
+    def run(self):
+        """Run.  Only escapes via exceptions."""
+        while True:
+            self.step()
+
+    def runq(self):
+        """
+        Run until machine halts, not blocking on output.
+        Returns output as a list.
+        """
+        while True:
+            try:
+                self.step()
+            except EOutput:
+                pass
+            except EHalt:
+                return self.output
+
     def step(self):
         """Execute the instruction at the current ip."""
+        # print instruction if debug is on
         if self.debug:
             out, offset = self._disone(self.ip)
             print out
 
+        # instruction fetch and decode
         instruction = self[self.ip]
         self.ip += 1
 
@@ -65,9 +85,8 @@ class Machine:
         except KeyError:
             raise EFault('Illegal opcode: %d' % opcode)
 
-        inargs = len(getargspec(operation).args)-1
-
-        # decode instruction's input arguments
+        # build instruction's input arguments
+        inargs = len(getargspec(operation).args)-1  # number of input args
         pos = 100
         args = []
         while inargs:
@@ -105,25 +124,6 @@ class Machine:
             else:
                 raise EFault("Bad mode in instruction %d" % instruction)
 
-    def run(self):
-        """Run.  Only escapes via exceptions."""
-        while True:
-            self.step()
-
-    def runq(self):
-        """
-        Run until machine halts, not blocking.
-        Returns output as a list.
-        This is how programs ran before Day 7.
-        """
-        while True:
-            try:
-                self.step()
-            except EOutput:
-                pass
-            except EHalt:
-                return self.output
-
     # Memory Management
 
     def __getitem__(self, address):
@@ -142,6 +142,7 @@ class Machine:
             raise EFault('Bad address: %d' % address)
 
     # Disassembly Routines
+
     def _disone(self, addr):
         """
         Disassemble the single instruction at addr.
