@@ -2,6 +2,7 @@
 # intcode machine
 #
 from inspect import getargspec
+from warnings import warn
 
 class EInput(Exception):
     """Input blocked."""
@@ -31,9 +32,9 @@ class Machine:
         if isinstance(mem,str):
             with open(mem, 'r') as memfile:
                 content = memfile.read()
-            self.memory = [int(x) for x in content.split(',')]
+            self.memory = Memory([int(x) for x in content.split(',')])
         else:
-            self.memory = list(mem)
+            self.memory = Memory(mem)
 
         if isinstance(input, int):
             self.input = [input]
@@ -124,22 +125,15 @@ class Machine:
             else:
                 raise EFault("Bad mode in instruction %d" % instruction)
 
-    # Memory Management
+    # Memory access
 
     def __getitem__(self, address):
         """Read value at address"""
-        try:
-            val = self.memory[address]
-        except IndexError:
-            raise EFault('Bad address: %d' % address)
-        return val
+        return self.memory[address]
 
     def __setitem__(self, address, value):
         """Store value at address"""
-        try:
-            self.memory[address] = value
-        except IndexError:
-            raise EFault('Bad address: %d' % address)
+        self.memory[address] = value
 
     # Disassembly Routines
 
@@ -154,7 +148,7 @@ class Machine:
         try:
             instruction = self[addr]
         except EFault:
-            return('       <out of memory range>',-1)
+            return('       <bad memory address>',-1)
 
         head = '%5d: ' % addr
         out = ''
@@ -202,7 +196,7 @@ class Machine:
         Dissassemble numinst instructions starting at addr.
         Pass numinst = -1 to disassemble until memory ends.
         """
-        while numinst != 0:
+        while numinst != 0 and addr < len(self.memory):
             (out, offset) = self._disone(addr)
             if offset < 0:
                 return
@@ -211,7 +205,7 @@ class Machine:
             numinst -= 1
 
     def dump(self, start = 0, end = None):
-        """Memory dump from start address to end address."""
+        """Memory dump the address range from start to end-1."""
         if end == None:
             end = len(self.memory)
         print ("%5d:" % start),
@@ -224,7 +218,55 @@ class Machine:
                 print ("%5d:" % addr),
         print
 
+#
+# Memory manager
+#
+class Memory:
+    """
+    Memory store for an intcode computer.
+    Models an infinite virtual memory space.
+    """
+
+    PAGESIZE = 4096
+    DANGER = 4096 * 4096  # get this big, print a warning
+
+    def __init__(self,contents):
+        """Init a virtual memory with given contents at address 0."""
+        self.memory = []
+        self.topmem = -1
+
+        for addr in range(len(contents)):
+            self[addr] = contents[addr]
+        
+    def __getitem__(self, address):
+        """Read value at address"""
+        try:
+            val = self.memory[address]
+        except IndexError:
+            raise EFault('Bad address: %d' % address)
+        return val
+
+    def __setitem__(self, address, value):
+        """Store value at address"""
+        try:
+            self.memory[address] = value
+        except IndexError:
+            distance = address - len(self.memory)
+            needed = (distance // Memory.PAGESIZE + 1) * Memory.PAGESIZE
+            if needed > Memory.DANGER:
+                warn('About to ask for %d memory.' % needed)
+            self.memory.extend([0]*needed)
+            self.memory[address] = value
+ 
+        self.topmem = max(self.topmem,address)
+
+    def __len__(self):
+        """Return the maximum legal address plus one."""
+        return self.topmem + 1
+
+#
 # Machine Instruction Set
+#
 
 _mode_syntax = {
     0 : '[%d]',
@@ -444,15 +486,15 @@ if __name__ == "__main__":
 
     print 'Part 1:'
     m = Machine("day9/input.txt",input=1)
-    m.memory.extend([0]*1000)
     out = m.runq()
     print '   ',out[0]
     assert(out == [2775723069])
-    print 'Part 2:'
-    m = Machine("day9/input.txt",input=2)
-    m.memory.extend([0]*1000)
-    out = m.runq()
-    print '   ',out[0]
-    assert(out == [49115])
 
-    
+    from timeit import default_timer as timer
+    print 'Part 2 (takes about 4.5 seconds):'
+    m = Machine("day9/input.txt",input=2)
+    start = timer()
+    out = m.runq()
+    end = timer()
+    print '   ',out[0],'(in',round(end-start,2),'seconds)'
+    assert(out == [49115])
