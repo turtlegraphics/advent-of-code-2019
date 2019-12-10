@@ -16,10 +16,10 @@ with open(args.file, 'r') as memfile:
     content = memfile.read()
     mem = [int(x) for x in content.split(',')]
 
-BOOST = intcode.Machine(mem + [0]*1000,input=[1])
+BOOST = intcode.Machine(mem,input=1)
 BOOST.runq()
 print BOOST.output
 
-BOOST = intcode.Machine(mem + [0]*1000,input=[2])
+BOOST = intcode.Machine(mem,input=2)
 BOOST.runq()
 print BOOST.output
