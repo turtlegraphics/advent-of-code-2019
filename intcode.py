@@ -1,6 +1,9 @@
-#
-# intcode machine
-#
+"""
+intcode machine
+
+Bryan Clair 2019
+"""
+
 from inspect import getargspec
 from warnings import warn
 
@@ -21,29 +24,25 @@ class EFault(Exception):
     pass
 
 class Machine:
-    def __init__(self,mem,input=[],debug=False):
+    def __init__(self,image,input=[],debug=False):
         """
-        mem : a filename containing a comma-separated memory image
-              OR
-              an array of intcode integers, will be copied locally
+        image : a filename containing a comma-separated memory image
+                OR
+                an memory image list (which will be copied locally).
         input : an array of values to pass as input, or a single integer input
         debug : when true, all instructions print output.
         """
-        self.memory = MemoryDict()
+        self.memory = {}
 
-        if isinstance(mem,str):
-            with open(mem, 'r') as memfile:
-                content = memfile.read()
-            mem = [int(x) for x in content.split(',')]
+        if isinstance(image,str):
+            with open(image, 'r') as imagefile:
+                content = imagefile.read()
+            image = [int(x) for x in content.split(',')]
 
-        for i in range(len(mem)):
-            self.memory[i] = mem[i]
+        for i in range(len(image)):
+            self[i] = image[i]
 
-        if isinstance(input, int):
-            self.input = [input]
-        else:
-            self.input = input
-
+        self.input = [input] if isinstance(input,int) else input
         self.output = []
 
         self.debug = debug
@@ -82,7 +81,6 @@ class Machine:
         instruction = self[self.ip]
         self.ip += 1
 
-        offset = 1
         opcode = instruction % 100
         try:
             operation = _instruction_set[opcode]
@@ -106,6 +104,7 @@ class Machine:
                 val = self[param + self.base]
             else:
                 raise EFault("Bad mode in instruction %d" % instruction)
+
             args.append(val)
             pos *= 10
             inargs -= 1
@@ -132,7 +131,11 @@ class Machine:
 
     def __getitem__(self, address):
         """Read value at address"""
-        return self.memory[address]
+        try:
+            val = self.memory[address]
+        except KeyError:
+            raise EFault('Bad address: %d' % address)
+        return val
 
     def __setitem__(self, address, value):
         """Store value at address"""
@@ -245,67 +248,6 @@ class Machine:
             print
 
 #
-# Memory managers
-#
-class Memory:
-    """
-    Memory store for an intcode computer.
-    Models an infinite virtual memory space.
-    """
-    def __init__(self):
-        """Init a virtual memory"""
-        self.topmem = -1
-        
-    def __getitem__(self, address):
-        """Read value at address"""
-        try:
-            val = self.memory[address]
-        except (IndexError, KeyError):
-            raise EFault('Bad address: %d' % address)
-        return val
-
-    def __len__(self):
-        """Return the maximum legal address plus one."""
-        return self.topmem + 1
-
-class MemoryDict(Memory):
-    """
-    Implement memory as a dictionary.
-    """
-    def __init__(self):
-        self.memory = {}
-        Memory.__init__(self)
-
-    def __setitem__(self, address, value):
-        self.memory[address] = value
-        self.topmem = max(self.topmem,address)
-
-class MemoryContiguous(Memory):
-    """
-    Implement a contiguous memory space as an array that
-    can be extended when needed.
-    """
-    PAGESIZE = 4096
-    DANGER = 4096 * 4096  # get this big, print a warning
-    def __init__(self):
-        self.memory = []
-        Memory.__init__(self)
-
-    def __setitem__(self, address, value):
-        """Store value at address"""
-        try:
-            self.memory[address] = value
-        except IndexError:
-            distance = address - len(self.memory)
-            needed = (distance // MemoryContiguous.PAGESIZE + 1) * MemoryContiguous.PAGESIZE
-            if needed > MemoryContiguous.DANGER:
-                warn('About to ask for %d memory.' % needed)
-            self.memory.extend([0]*needed)
-            self.memory[address] = value
- 
-        self.topmem = max(self.topmem,address)
-
-#
 # Machine Instruction Set
 #
 
@@ -336,12 +278,11 @@ def _input(m):
     """IN %s"""
     try:
         val = m.input.pop(0)
-        return val
     except IndexError:
         # will need to restart this instruction, so back up
-        print 'backup!'
         m.ip -= 1
         raise EInput
+    return val
 
 @_opcode(4)
 def _output(m,v1):
@@ -409,6 +350,37 @@ if __name__ == "__main__":
     assert(machine[0] == 3500)
 
     print '==========='
+    print ' I/O       '
+    print '==========='
+    machine = Machine([3,0],debug=True)
+    try:
+        machine.run()
+        assert(False)
+    except EInput as err:
+        print 'PASSED'
+
+    machine = Machine([3,0,3,0],input=0,debug=True)
+    try:
+        machine.run()
+        assert(False)
+    except EInput as err:
+        print 'PASSED'
+
+    machine = Machine([3,0,3,0,3,0],input=[0,0],debug=True)
+    try:
+        machine.run()
+        assert(False)
+    except EInput as err:
+        print 'PASSED'
+
+    machine = Machine([4,0],debug=True)
+    try:
+        machine.run()
+        assert(False)
+    except EOutput as err:
+        print 'PASSED'
+
+    print '==========='
     print ' Faults    '
     print '==========='
     fault_tests = [
@@ -416,7 +388,7 @@ if __name__ == "__main__":
         [80],
         [301,0,0,0],
         [1,4,4,4],
-        [10001,2,2,2]
+        [10001,2,2,2],
         ]
     for mem in fault_tests:
         machine = Machine(mem,debug=True)
