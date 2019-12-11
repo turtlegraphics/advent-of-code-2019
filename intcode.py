@@ -29,12 +29,15 @@ class Machine:
         input : an array of values to pass as input, or a single integer input
         debug : when true, all instructions print output.
         """
+        self.memory = MemoryDict()
+
         if isinstance(mem,str):
             with open(mem, 'r') as memfile:
                 content = memfile.read()
-            self.memory = Memory([int(x) for x in content.split(',')])
-        else:
-            self.memory = Memory(mem)
+            mem = [int(x) for x in content.split(',')]
+
+        for i in range(len(mem)):
+            self.memory[i] = mem[i]
 
         if isinstance(input, int):
             self.input = [input]
@@ -194,9 +197,23 @@ class Machine:
     def disassemble(self, addr = 0, numinst = -1):
         """
         Dissassemble numinst instructions starting at addr.
-        Pass numinst = -1 to disassemble until memory ends.
+        Pass numinst = -1 to disassemble until memory ends or
+        four zeros in a row.
         """
-        while numinst != 0 and addr < len(self.memory):
+        zeros = 0
+        while numinst != 0:
+            try:
+                inst = self[addr]
+            except EFault:
+                return
+
+            if inst == 0:
+                zeros += 1
+                if zeros > 4 and numinst < 0:
+                    return
+            else:
+                zeros = 0
+
             (out, offset) = self._disone(addr)
             if offset < 0:
                 return
@@ -207,44 +224,72 @@ class Machine:
     def dump(self, start = 0, end = None):
         """Memory dump the address range from start to end-1."""
         if end == None:
-            end = len(self.memory)
-        print ("%5d:" % start),
-        addr = start
+            end = start + 100
+
+        addr = start - (start % 10)
         while addr < end:
-            print ("%5d" % self[addr]),
+            if (addr % 10 == 0):
+                print ("%5d:" % addr),
+            if addr >= start:
+                try:
+                    print ("%5d" % self[addr]),
+                except EFault:
+                    print
+                    return
+            else:
+                print "     ",
             addr += 1
             if (addr % 10 == 0):
                 print
-                print ("%5d:" % addr),
-        print
+        if (addr % 10 != 0):
+            print
 
 #
-# Memory manager
+# Memory managers
 #
 class Memory:
     """
     Memory store for an intcode computer.
     Models an infinite virtual memory space.
     """
-
-    PAGESIZE = 4096
-    DANGER = 4096 * 4096  # get this big, print a warning
-
-    def __init__(self,contents):
-        """Init a virtual memory with given contents at address 0."""
-        self.memory = []
+    def __init__(self):
+        """Init a virtual memory"""
         self.topmem = -1
-
-        for addr in range(len(contents)):
-            self[addr] = contents[addr]
         
     def __getitem__(self, address):
         """Read value at address"""
         try:
             val = self.memory[address]
-        except IndexError:
+        except (IndexError, KeyError):
             raise EFault('Bad address: %d' % address)
         return val
+
+    def __len__(self):
+        """Return the maximum legal address plus one."""
+        return self.topmem + 1
+
+class MemoryDict(Memory):
+    """
+    Implement memory as a dictionary.
+    """
+    def __init__(self):
+        self.memory = {}
+        Memory.__init__(self)
+
+    def __setitem__(self, address, value):
+        self.memory[address] = value
+        self.topmem = max(self.topmem,address)
+
+class MemoryContiguous(Memory):
+    """
+    Implement a contiguous memory space as an array that
+    can be extended when needed.
+    """
+    PAGESIZE = 4096
+    DANGER = 4096 * 4096  # get this big, print a warning
+    def __init__(self):
+        self.memory = []
+        Memory.__init__(self)
 
     def __setitem__(self, address, value):
         """Store value at address"""
@@ -252,17 +297,13 @@ class Memory:
             self.memory[address] = value
         except IndexError:
             distance = address - len(self.memory)
-            needed = (distance // Memory.PAGESIZE + 1) * Memory.PAGESIZE
-            if needed > Memory.DANGER:
+            needed = (distance // MemoryContiguous.PAGESIZE + 1) * MemoryContiguous.PAGESIZE
+            if needed > MemoryContiguous.DANGER:
                 warn('About to ask for %d memory.' % needed)
             self.memory.extend([0]*needed)
             self.memory[address] = value
  
         self.topmem = max(self.topmem,address)
-
-    def __len__(self):
-        """Return the maximum legal address plus one."""
-        return self.topmem + 1
 
 #
 # Machine Instruction Set
@@ -419,7 +460,7 @@ if __name__ == "__main__":
         machine = Machine("day5/test3.txt",input=x,debug=True)
         out = machine.runq()
         assert(out == [x])
-    print '    PASSED'
+        print '    PASSED'
 
     print 'test 4'
     # check if input is <, =, or > 8
