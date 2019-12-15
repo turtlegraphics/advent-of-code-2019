@@ -74,3 +74,16 @@ class Grid:
                 else:
                     out += ' '
             print out
+
+if __name__ == '__main__':
+    print parse_args()
+
+    g = Grid()
+    g[(0,-1)] = 'U'
+    g[(-1,0)] = 'o'
+    g[(1,0)] = 'o'
+    for p in [(-1,2),(0,2),(1,2),(-2,1),(-2,0),(-2,-1),
+              (2,1),(2,0),(2,-1),(-1,-2),(0,-2),(1,-2)]:
+        g[p] = '.'
+    assert(g[(0,-1)] == 'U')
+    g.display()
