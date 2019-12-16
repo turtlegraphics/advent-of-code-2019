@@ -32,7 +32,7 @@ def parse_args():
                         help = "Problem input file (optional).")
     args = parser.parse_args()
     if args.verbose > 2:
-        print args
+        print(args)
 
     return args
 
@@ -73,10 +73,10 @@ class Grid:
                     out += self.raster[(x,y)]
                 else:
                     out += ' '
-            print out
+            print(out)
 
 if __name__ == '__main__':
-    print parse_args()
+    print(parse_args())
 
     g = Grid()
     g[(0,-1)] = 'U'

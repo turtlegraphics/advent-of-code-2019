@@ -7,13 +7,14 @@
 import sys
 sys.path.append("..")
 import aocutils
+import numpy as np
 
 args = aocutils.parse_args()
 
 inputlines = [x.strip() for x in open(args.file).readlines()]
 
 for line in inputlines:
-    signal = [int(x) for x in list(line)]
+    signal = np.array([int(x) for x in list(line)],dtype=np.int64)
 
 print(signal)
 
@@ -23,16 +24,12 @@ mask_base = [0,1,0,-1]
 def mask(stage,index):
     return mask_base[(index + 1)//(stage + 1) % 4]
 
-def fft(signal):
-    v = list(signal)
-    for stage in range(len(signal)):
-        dot = 0
-        for index in range(len(signal)):
-            dot += signal[index]*mask(stage,index)
-        v[stage] = abs(dot) % 10
-    return v
+fft = np.fromfunction(np.vectorize(mask),
+                         shape = (len(signal),len(signal)),
+                         dtype=np.int64)
+print(fft)
 
 for i in range(100):
-    signal = fft(signal)
-
-print signal
+    signal = abs(np.dot(fft,signal)) % 10
+    
+print(signal)

@@ -4,6 +4,9 @@
 #
 # Day 16
 #
+
+# Slow version not using numpy, but maybe easier to use for part 2
+
 import sys
 sys.path.append("..")
 import aocutils
