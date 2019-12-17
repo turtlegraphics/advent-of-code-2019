@@ -1,0 +1,23 @@
+solve-1.py solves part 1
+
+Part 2 solution is solve.R, which has a 5 hour run time on my machine.
+
+Here's some notes on it:
+
+This implements a fast FFT, i.e. one that can be computed in N log(N) where N is the signal length (and is enormous).
+
+The general observation is that the matrix consists of triangular stripes of 1's and -1's. 
+
+The first stripe of 1's is pretty easy to see, starting at the upper left corner and spreading southeast and getting wider.
+
+The next stripe is -1's, staring at row 1 column 3 and spreading southeast and getting wider.
+
+The next stripe is 1's, starting at row 1 column 5, and so on.
+
+The first stripe has nonzero entries in every row.  The second stripe has nonzero entries in only N/3 rows, the third in only N/5, and so on.
+
+First, do a cumulative sum on the signal.  We can then compute the sum of entries for a given stripe in a given row with a single computation: it's the difference of the cumulative sum at the end of the stripe and the cumulative sum at the beginning of the stripe.
+
+Now, we've got to do that for every stripe, so if you're careful about it, you need on the order of N + N/3 + N/5 + N/7 + ... operations, which is O(N log N).
+
+I switched from Python to R to take advantage of vectorized operations, and my code does actually compute the 100th FFT of the full 6500000 element signal.
