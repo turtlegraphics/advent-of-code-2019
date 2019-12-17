@@ -60,7 +60,7 @@ class Machine:
     def runq(self):
         """
         Run until machine halts, not blocking on output.
-        Returns output as a list.
+        Returns output as a list.  May raise EInput.
         """
         while True:
             try:
