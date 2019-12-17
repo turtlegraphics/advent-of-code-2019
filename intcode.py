@@ -134,7 +134,10 @@ class Machine:
         try:
             val = self.memory[address]
         except KeyError:
-            raise EFault('Bad address: %d' % address)
+            # It is legal to read uninitialized memory.  You get 0.
+            self[address] = 0
+            return 0
+#            raise EFault('Bad address: %d' % address)
         return val
 
     def __setitem__(self, address, value):
