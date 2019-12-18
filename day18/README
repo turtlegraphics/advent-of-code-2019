@@ -1,0 +1,3 @@
+solve.py : What I wrote to solve part 1 live.
+solve-1++.py : Generalize part 1 to multi-robot and add some major speed
+               but not enough to actually handle part II
