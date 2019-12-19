@@ -50,6 +50,12 @@ class Machine:
         self.ip = 0
         self.base = 0
 
+    def reset(self):
+        self.input = []
+        self.output = []
+        self.ip = 0
+        self.base = 0
+
     # Execution Routines
 
     def run(self):
