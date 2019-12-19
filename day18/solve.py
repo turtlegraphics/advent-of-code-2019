@@ -43,104 +43,106 @@ for line in inputlines:
             maze[x,y] = line[x]
     y += 1
 
-
 numbots = len(starts)
 
 maze.display()
 print numbots,'robots starting at',starts
 print 'seeking:',allkeys
 
-def find_full_move(x,y,dir):
+def find_all_moves(pos,keys,bot):
     """
-    Move the bot at position x,y in direction dir and then
-    continue down that path until a decision is reached.
-    Returns final position of bot and number of steps taken.
+    Return all moves a bot starting at pos can make
+    (assuming the bots collective hold keys)
+    that result in getting a new key.
     """
+    moves = []
+    visited = {}
+    unexplored = [(pos,0)]
     steps = 0
-
-    while True:
-        dx, dy = dir
-        newx,newy = x+dx,y+dy
-        if maze[newx,newy] != '.':
-            return (x,y,steps)
-        x,y = newx,newy
+    while unexplored:
+        pos,steps = unexplored.pop(0)
+        if pos in visited:
+            continue
+        if args.verbose > 2:
+            print 'fam: bot',bot,'visited',pos,'after',steps,'steps'
+        visited[pos] = steps
+        x,y = pos
         steps += 1
-        gooddir = None
-        gooddirct = 0
-        # find a good direction
-        for d in dirs:
-            if d != opposite(dir):
-                tdx,tdy = d
-                tx,ty = x+tdx,y+tdy
-                obj = maze[tx,ty]
-                if obj == '.':
-                    gooddir = d
-                    gooddirct += 1
-                elif obj != '#':
-                    # decision point (key or door)
-                    return (x,y,steps)
-        if gooddirct != 1:
-            # can't decide here
-            return (x,y,steps)
-        # move in the unique gooddir
-        dir = gooddir
-
-visited = {}
-nokeys = ""
-unexplored = [(0,0,nokeys,tuple(starts))]
-topstep = 0
-curkeys = ""
-
-while unexplored:
-    numkeys,steps,keys,pos = unexplored.pop(0)
-    if steps > topstep or keys != curkeys:
-        if args.verbose > 1:
-            print 'steps:',steps,'keys=',keys,'unexplored:',len(unexplored)
-        topstep = steps
-        curkeys = keys
-
-#    print 'at',pos,'with',keys,'after',steps,'steps'
-    if (pos,keys) in visited:
-        continue
-    visited[pos,keys] = steps
-    
-    for bot in range(numbots):
-        x,y = pos[bot]
         for dir in dirs:
             dx,dy = dir
-            newx,newy = x+dx,y+dy
-            obj = maze[newx,newy]
-
-            if obj == '.':
-                (newx,newy,stepstaken) = find_full_move(x,y,dir)
-                plist = list(pos)
-                plist[bot] = (newx,newy)
-                newpos = tuple(plist)
-                bisect.insort(unexplored,(len(keys),steps+stepstaken, keys, newpos))
-                continue
-
+            pos = x+dx,y+dy
+            obj = maze[pos]
             if obj == '#':
-                continue
-
-            plist = list(pos)
-            plist[bot] = (newx,newy)
-            newpos = tuple(plist)
-
-            if obj.isupper():
-                if obj.lower() in keys:
-                    bisect.insort(unexplored,(len(keys),steps+1, keys, newpos))
+                pass
+            elif obj == '.':
+                unexplored.append((pos,steps))
+            elif obj.isupper():
+                 if obj.lower() in keys:
+                     unexplored.append((pos,steps))
             else:
                 assert(obj.islower())
-                newkeys = addkey(keys,obj)
-                if newkeys == allkeys:
-                    print 'found all keys in',steps+1,'steps'
-                    sys.exit()
-                bisect.insort(unexplored,(len(keys),steps+1, newkeys, newpos))
+                if obj in keys:
+                    unexplored.append((pos,steps))
+                else:
+                    moves.append((pos,steps,obj))
+    return moves
 
-minsteps = 1000000
-for (pos,keys) in visited:
-    if keys == allkeys:
-        minsteps = min(minsteps,visited[pos,keys])
+def BFS():
+    visited = {}
+    unexplored = [ (0,'',tuple(starts)) ]
 
-print minsteps
+    topsteps = 0
+    mostkeys = 0
 
+    while unexplored:
+        steps,keys,pos = unexplored.pop(0)
+        visited[(pos,keys)] = steps
+        if steps > topsteps or len(keys) > mostkeys:
+            print 'steps:',steps,'unexplored:',len(unexplored),'with:',keys
+            topsteps = steps
+            mostkeys = len(keys)
+            if mostkeys == len(allkeys):
+                print 'Found all keys in',steps,'steps.'
+                sys.exit()
+
+        moves = []
+        for bot in range(numbots):
+            moves.append(find_all_moves(pos[bot],keys,bot))
+
+        for bot in range(numbots):
+            for move in moves[bot]:
+                botpos,distance,newkey = move
+                newpos = list(pos)
+                newpos[bot] = botpos
+                newkeys = addkey(keys,newkey)
+                bisect.insort(unexplored,(steps+distance,newkeys,tuple(newpos)))
+
+def DFS(pos,keys):
+    """
+    Figure out the best way to get all keys from
+    the current state (keys,pos).
+    Returns the number of steps it takes, or None if impossible.
+    """
+    print 'keys:',keys,pos
+    moves = []
+    for bot in range(numbots):
+        moves.append(find_all_moves(pos[bot],keys,bot))
+
+    found = False
+    for bot in range(numbots):
+        for move in moves[bot]:
+            botpos,distance,newkey = move
+            newpos = list(pos)
+            newpos[bot] = botpos
+            newkeys = addkey(keys,newkey)
+            steps = DFS(newpos,newkeys)
+            if not found:
+                found = True
+                minsteps = steps
+            else:
+                minsteps = min(steps,minsteps)
+
+    return minsteps if found else None
+
+print 'Found all keys in ',DFS(starts,'')
+#BFS()
