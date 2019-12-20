@@ -98,15 +98,20 @@ for g in gates:
 if args.verbose > 1:
     maze.display()
 
-
 visited = {}
 unexplored = [(gates['AA'].endpoints[0][0],0,0)]
+maxdepth = 0
 while unexplored:
     pos,level,steps = unexplored.pop(0)
     if (pos,level) in visited:
         continue
     visited[(pos,level)] = steps
-    
+
+    if level > maxdepth:
+        print 'reached depth',level,
+        print 'unexplored',len(unexplored)
+        maxdepth = level
+
     x,y = pos
     for dir in dirs:
         dx,dy = dir
@@ -128,5 +133,12 @@ while unexplored:
             if g.name == 'AA':
                 continue
             newpos,updown = g.other_end(pos)
-            unexplored.append( ( newpos, level, steps+1 ) )
-            
+            newlevel = level
+            if args.part == 2:
+                newlevel = newlevel - updown
+                if newlevel < 0:
+                    continue
+            if args.verbose > 2:
+                print 'passing through gate',g.name
+
+            unexplored.append( ( newpos, newlevel, steps+1 ) )
