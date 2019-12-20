@@ -70,7 +70,7 @@ class Grid:
             out = ''
             for x in range(self.xmin,self.xmax + 1):
                 if (x,y) in self.raster:
-                    out += self.raster[(x,y)]
+                    out += str(self.raster[(x,y)])
                 else:
                     out += ' '
             print(out)
